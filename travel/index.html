@@ -125,6 +125,9 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
 .rv dt{color:var(--ink);font-size:13px;font-weight:600;padding-top:2px;line-height:1.25}.rv dt small{display:block;font-weight:400;font-size:11px;color:var(--mute)}.rv dd{margin:0;overflow-wrap:anywhere}
 .rv dd.k{font-weight:700;font-size:17px;letter-spacing:.02em}
 .rv .ft{padding:12px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.nomRow{background:var(--nom);border:1.5px dashed var(--pink);border-radius:12px;padding:12px 14px}
+.nomRow label .zh{color:var(--pink)}
+.nomRow .nmInfo{margin:8px 0 0;font-size:13px;font-weight:500}
 .transit{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
 .transit .tick{margin:0;flex:none;font-size:15px;font-weight:600}
 .transit input.line{flex:1 1 180px;width:auto;border:0;border-bottom:2px solid var(--line);border-radius:0;background:transparent;padding:6px 2px;min-height:40px;box-shadow:none}
@@ -346,6 +349,7 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
     <div class="full addrSlot" style="display:contents"></div>
     <div class="full"><label class="req"><span class="zh">婚姻状态</span><span class="ot">Marital status · Status perkahwinan</span></label><select data-k="ms" required class="msSel"></select></div>
     <div class="full"><label class="req"><span class="zh">职业</span><span class="ot">Occupation · Pekerjaan</span></label><input data-k="occ" placeholder="例如：文员 Clerk / 老板 Business owner" required></div>
+    <div class="full nomRow"><label><span class="zh">♥ 这位投保人的受益人</span><span class="ot">Nominee for this insured · Penama untuk diinsuranskan ini</span></label><select class="nmSel"></select><p class="nmInfo"></p></div>
   </div>
 </section>
 </template>
@@ -539,18 +543,26 @@ function addIns(){
   const node=$('#tIns').content.firstElementChild.cloneNode(true);node.dataset.id='i'+(++uid);
   initAddr(node);setupIc(node);setupPhone(node);node.querySelector('.msSel').innerHTML=$('#tMs').innerHTML;
   const sg=$('#tSig').content.firstElementChild.cloneNode(true);$('#sigList').appendChild(sg);initPad(sg);node._sig=sg;
-  node.querySelector('.rmIns').onclick=()=>{sg.remove();node.remove();refresh()};
+  node.querySelector('.rmIns').onclick=()=>{nomsOf(node).forEach(m=>m.remove());sg.remove();node.remove();refresh()};
   node.querySelector('.same').onchange=syncAll;
+  const nm=node.querySelector('.nmSel');
+  nm.onchange=()=>{
+    if(nm.value==='own'){refresh();if(!nomsOf(node).length)addNom(node.dataset.id);else nomsOf(node)[0].scrollIntoView({behavior:'smooth',block:'start'})}
+    else{const mine=nomsOf(node),filled=mine.some(m=>$$('input:not([type=checkbox]),select',m).some(f=>!f.classList.contains('own')&&(f.value||'').trim()));
+      if(filled&&!confirm('这位投保人已经填了受益人资料，要删除吗？\nDelete the nominee details already filled for this insured?')){nm.value=nm._prev;return}
+      mine.forEach(m=>m.remove());refresh()}
+    nm._prev=nm.value};
   $('#insList').appendChild(node);refresh();
   if(n)node.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function addNom(){
+function addNom(owner){
   const list=$('#nomList');if(list.children.length>=MAX_NOM)return;
   const node=$('#tNom').content.firstElementChild.cloneNode(true);
   initAddr(node);setupIc(node);setupPhone(node);node.querySelector('.msSel').innerHTML=$('#tMs').innerHTML;
   node.querySelector('.rmNom').onclick=()=>{node.remove();refresh()};
   node.querySelector('.same').onchange=syncAll;node.querySelector('.own').onchange=syncAll;
   list.appendChild(node);refresh();
+  if(typeof owner==='string'){node.querySelector('.own').value=owner;syncAll()}
   if(list.children.length>1)node.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function syncAll(){
@@ -564,20 +576,32 @@ function refresh(){
     c.querySelector('.no').textContent=i+1;c.querySelector('.ttl').innerHTML=T(`投保人 ${i+1}${i?`（+${i}）`:''}`,`Insured ${i+1} · Diinsuranskan ${i+1}`);
     c.querySelector('.rmIns').style.display=i?'':'none';c.querySelector('.sameRow').style.display=i?'':'none';
     c._sig.querySelector('.sname').textContent=`投保人 ${i+1} · Insured ${i+1} · Diinsuranskan ${i+1}${g(c,'name')?' — '+g(c,'name'):''}`;
+    const row=c.querySelector('.nomRow'),nm=c.querySelector('.nmSel');row.style.display=i?'':'none';
+    if(i){
+      const srcs=ins.slice(0,i).filter(x=>nmode(x)==='own'),cur=nm.value;
+      nm.innerHTML=srcs.map(x=>{const k=ins.indexOf(x)+1,n=g(x,'name').replace(/[<>&"]/g,'');return`<option value="${x.dataset.id}">✓ 和投保人 ${k} 的受益人一样 · Same as Insured ${k}${n?' ('+n+')':''}</option>`}).join('')+'<option value="own">✎ 不一样，另外填写受益人 · Different nominee</option>';
+      let val=cur||ins[0].dataset.id;
+      if(val!=='own'&&!srcs.some(x=>x.dataset.id===val)){const t=ins.find(x=>x.dataset.id===val);val=t&&ins.indexOf(t)<i?srcOf(t).dataset.id:ins[0].dataset.id}
+      nm.value=val;nm._prev=val;
+      const info=c.querySelector('.nmInfo');
+      if(val==='own'){info.innerHTML=`请在下面「受益人」那里填写投保人 ${i+1} 的受益人<span class="otl">Fill in this insured's nominee in the Nominee section below · Isi penama di bahagian Penama di bawah</span>`}
+      else{const k=ins.indexOf(srcOf(c))+1;info.innerHTML=`✓ 不用再填，会用投保人 ${k} 的受益人资料<span class="otl">No need to fill again · Tidak perlu isi semula</span>`}
+    }
   });
-  const opts=ins.map((c,i)=>`<option value="${c.dataset.id}">投保人 ${i+1} · Insured ${i+1}${g(c,'name')?' · '+g(c,'name').replace(/[<>&"]/g,''):''}</option>`).join('');
+  const ownIns=ins.filter(c=>nmode(c)==='own');
+  const opts=ownIns.map(c=>{const i=ins.indexOf(c);return`<option value="${c.dataset.id}">投保人 ${i+1} · Insured ${i+1}${g(c,'name')?' · '+g(c,'name').replace(/[<>&"]/g,''):''}</option>`}).join('');
   const noms=$$('.nom');
   noms.forEach((m,j)=>{
     m.querySelector('.ttl').innerHTML=T(`受益人 ${j+1}${j?`（+${j}）`:''}`,`Nominee ${j+1} · Penama ${j+1}`);m.querySelector('.rmNom').style.display=j?'':'none';
-    const sel=m.querySelector('.own'),cur=sel.value;sel.innerHTML=opts;sel.value=ins.some(c=>c.dataset.id===cur)?cur:ins[0].dataset.id;
-    m.querySelector('.owner').style.display=ins.length>1?'':'none';
+    const sel=m.querySelector('.own'),cur=sel.value;sel.innerHTML=opts;sel.value=ownIns.some(c=>c.dataset.id===cur)?cur:ins[0].dataset.id;
+    m.querySelector('.owner').style.display=ownIns.length>1?'':'none';
   });
   $('#addWrap').style.display=ins.length>=MAX_INS?'none':'';
   $('#addIns').innerHTML=T(`＋${ins.length} 添加下一位投保人`,`Add next insured · Tambah diinsuranskan seterusnya`);
   $('#addNote').innerHTML=`还可以添加 ${MAX_INS-ins.length} 位（最多 +5）<span class="otl">${MAX_INS-ins.length} more allowed · Boleh tambah ${MAX_INS-ins.length} lagi</span>`;
   $('#nomWrap').style.display=noms.length>=MAX_NOM?'none':'';
   $('#addNom').innerHTML=T(`＋${noms.length} 添加下一位受益人`,`Add next nominee · Tambah penama seterusnya`);
-  $('#nomNote').innerHTML=ins.length>1?'每位投保人都要有受益人，并选择「属于哪位投保人」<span class="otl">Every insured needs a nominee · Setiap diinsuranskan perlu penama</span>':'需要多一位受益人才按<span class="otl">Only if you need another nominee · Hanya jika perlu penama lain</span>';
+  $('#nomNote').innerHTML=ownIns.length>1?'每位填写「不一样」的投保人都要有受益人，并选择「属于哪位投保人」<span class="otl">Choose which insured each nominee is for · Pilih penama untuk diinsuranskan mana</span>':'需要多一位受益人才按<span class="otl">Only if you need another nominee · Hanya jika perlu penama lain</span>';
   syncAll();upd();
 }
 function upd(){
@@ -596,7 +620,7 @@ function check(){
   if(v('dep')&&v('ret')&&v('ret')<v('dep')){$('#ret').classList.add('bad');ok=false}
   $('#depBtn').classList.toggle('bad',!v('dep'));$('#retBtn').classList.toggle('bad',!v('ret')||v('ret')<v('dep'));
   $$('#sigList .pad').forEach(c=>{if(!c._ink){noSig++;c.classList.add('bad')}});
-  $$('.ins').forEach(c=>{if(!$$('.nom').some(m=>m.querySelector('.own').value===c.dataset.id))noNom++});
+  $$('.ins').forEach(c=>{if(nmode(c)==='own'&&!nomsOf(c).length)noNom++});
   const telBad=$$('[data-k="hp"],[data-k="tel"]').filter(i=>{i._show&&i._show();return i.value&&phoneProblem(i.value)}).length;if(telBad)ok=false;
   const icBad=[];
   people().forEach(p=>{renderIcv(p.el);if(p.ic&&icProblem(p.ic))icBad.push(p.label+(p.name?'（'+p.name+'）':''))});
@@ -613,10 +637,14 @@ function check(){
   return false;
 }
 const nomsOf=c=>$$('.nom').filter(m=>m.querySelector('.own').value===c.dataset.id);
+const nmode=c=>{const ins=$$('.ins'),sel=c.querySelector('.nmSel');return(c===ins[0]||!sel||!sel.value||sel.value==='own')?'own':sel.value};
+function srcOf(c){const ins=$$('.ins');let cur=c;for(let k=0;k<10&&nmode(cur)!=='own';k++)cur=ins.find(x=>x.dataset.id===nmode(cur))||ins[0];return cur}
+function sameTxt(c){const ins=$$('.ins'),s=srcOf(c),k=ins.indexOf(s)+1,nm=nomsOf(s).map(m=>g(m,'name')).filter(Boolean).join('、');return`和投保人 ${k} 相同 · Same as Insured ${k}${nm?'（'+nm+'）':''}`}
 function build(){
   const days=upd(),L=['*申请旅游保险需要的资料*','',`去旅游的国家: ${v('dest')}`,`开始日期: ${fmtL(v('dep'))}`,`回来日期: ${fmtL(v('ret'))}（共 ${days} 天）`,`转机 Transit: ${trnTxt()}`,`投保人数: ${$$('.ins').length} 位`];
   $$('.ins').forEach((c,i)=>{
     L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`职业 Occupation: ${g(c,'occ')}`,`hp no: ${g(c,'hp')}`);
+    if(nmode(c)!=='own')L.push('',`nominee受益人（投保人 ${i+1}）：${sameTxt(c)}`);
     nomsOf(c).forEach((m,j)=>L.push('',`nominee受益人 ${j+1}（投保人 ${i+1}）`,`Name: ${g(m,'name')}`,`ic : ${g(m,'ic')}`,`Address: ${addrText(m)}`,`婚姻状态：${g(m,'ms')}`,`电话号码：${g(m,'tel')}`,`关系: ${g(m,'rel')}`));
   });
   L.push('','✍️ 投保人已签名确认以上资料属实（签名另附）。');
@@ -716,6 +744,7 @@ async function makePdf(){
       {zh:'手机号码',ot:'HP No. · No. Telefon',v:g(ci,'hp')},{zh:'地址',ot:'Address · Alamat',v:addrText(ci)},
       {zh:'婚姻状态',ot:'Marital status · Status',v:g(ci,'ms')},
       {zh:'职业',ot:'Occupation · Pekerjaan',v:g(ci,'occ')},
+      ...(nmode(ci)!=='own'?[{zh:'受益人',ot:'Nominee · Penama',v:sameTxt(ci)}]:[]),
       {zh:'签名',ot:'Signature · Tandatangan',sig:ci._sig.querySelector('.pad'),name:g(ci,'name')}]});
     nomsOf(ci).forEach((m,j)=>blocks.push({title:`受益人 ${j+1}（投保人 ${i+1}）`,sub:`NOMINEE · PENAMA`,th:TH.nom,rows:[
       {zh:'姓名',ot:'Name · Nama',v:g(m,'name'),big:1},{zh:'IC 身份证号码',ot:'IC No. · No. KP',v:g(m,'ic'),big:1},
@@ -790,7 +819,7 @@ function review(){
   const days=upd(),row=(k,v,cls)=>{const[z,o]=k.split('|');return`<dt>${z}<small>${o||''}</small></dt><dd${cls?' class="k"':''}>${esc(v)}</dd>`};
   let h=`<div class="p"><h3>✈ 行程 · Trip · Perjalanan</h3><dl>${row('国家|Country · Negara',v('dest'))}${row('开始|Start · Mula',fmtL(v('dep')))}${row('回来|Return · Pulang',fmtL(v('ret'))+` (${days})`)}${row('转机|Transit',trnTxt())}</dl></div>`;
   $$('.ins').forEach((c,i)=>{
-    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}${row('职业|Occupation · Pekerjaan',g(c,'occ'))}</dl></div>`;
+    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}${row('职业|Occupation · Pekerjaan',g(c,'occ'))}${nmode(c)!=='own'?row('受益人|Nominee · Penama',sameTxt(c)):''}</dl></div>`;
     nomsOf(c).forEach((m,j)=>{m.dataset.rid=m.dataset.rid||('n'+(++uid));
       h+=`<div class="p" style="background:var(--nom)"><h3>受益人 ${j+1} · Nominee（投保人 ${i+1}）<button type="button" data-go="${m.dataset.rid}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(m,'name'),1)}${row('IC|No. KP',g(m,'ic'),1)}${row('电话|Phone · Telefon',g(m,'tel'))}${row('地址|Address · Alamat',addrText(m))}${row('婚姻状态|Status · Status',g(m,'ms'))}${row('关系|Relationship · Hubungan',g(m,'rel'))}</dl></div>`});
   });
