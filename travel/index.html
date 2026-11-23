@@ -295,6 +295,7 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
     <div class="full sameRow"><label class="tick"><input type="checkbox" class="same"><span><span class="zh">地址和投保人 1 相同</span><span class="ot">Same address as Insured 1 · Alamat sama seperti Diinsuranskan 1</span></span></label></div>
     <div class="full addrSlot" style="display:contents"></div>
     <div class="full"><label class="req"><span class="zh">婚姻状态</span><span class="ot">Marital status · Status perkahwinan</span></label><select data-k="ms" required class="msSel"></select></div>
+    <div class="full"><label class="req"><span class="zh">职业</span><span class="ot">Occupation · Pekerjaan</span></label><input data-k="occ" placeholder="例如：文员 Clerk / 老板 Business owner" required></div>
   </div>
 </section>
 </template>
@@ -564,7 +565,7 @@ const nomsOf=c=>$$('.nom').filter(m=>m.querySelector('.own').value===c.dataset.i
 function build(){
   const days=upd(),L=['*申请旅游保险需要的资料*','',`去旅游的国家: ${v('dest')}`,`开始日期: ${fmtL(v('dep'))}`,`回来日期: ${fmtL(v('ret'))}（共 ${days} 天）`,`投保人数: ${$$('.ins').length} 位`];
   $$('.ins').forEach((c,i)=>{
-    L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`hp no: ${g(c,'hp')}`);
+    L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`职业 Occupation: ${g(c,'occ')}`,`hp no: ${g(c,'hp')}`);
     nomsOf(c).forEach((m,j)=>L.push('',`nominee受益人 ${j+1}（投保人 ${i+1}）`,`Name: ${g(m,'name')}`,`ic : ${g(m,'ic')}`,`Address: ${addrText(m)}`,`婚姻状态：${g(m,'ms')}`,`电话号码：${g(m,'tel')}`,`关系: ${g(m,'rel')}`));
   });
   L.push('','✍️ 投保人已签名确认以上资料属实（签名另附）。');
@@ -662,6 +663,7 @@ async function makePdf(){
       {zh:'姓名',ot:'Name · Nama',v:g(ci,'name'),big:1},{zh:'IC 身份证号码',ot:'IC No. · No. KP',v:g(ci,'ic'),big:1},
       {zh:'手机号码',ot:'HP No. · No. Telefon',v:g(ci,'hp')},{zh:'地址',ot:'Address · Alamat',v:addrText(ci)},
       {zh:'婚姻状态',ot:'Marital status · Status',v:g(ci,'ms')},
+      {zh:'职业',ot:'Occupation · Pekerjaan',v:g(ci,'occ')},
       {zh:'签名',ot:'Signature · Tandatangan',sig:ci._sig.querySelector('.pad'),name:g(ci,'name')}]});
     nomsOf(ci).forEach((m,j)=>blocks.push({title:`受益人 ${j+1}（投保人 ${i+1}）`,sub:`NOMINEE · PENAMA`,th:TH.nom,rows:[
       {zh:'姓名',ot:'Name · Nama',v:g(m,'name'),big:1},{zh:'IC 身份证号码',ot:'IC No. · No. KP',v:g(m,'ic'),big:1},
@@ -736,7 +738,7 @@ function review(){
   const days=upd(),row=(k,v,cls)=>{const[z,o]=k.split('|');return`<dt>${z}<small>${o||''}</small></dt><dd${cls?' class="k"':''}>${esc(v)}</dd>`};
   let h=`<div class="p"><h3>✈ 行程 · Trip · Perjalanan</h3><dl>${row('国家|Country · Negara',v('dest'))}${row('开始|Start · Mula',fmtL(v('dep')))}${row('回来|Return · Pulang',fmtL(v('ret'))+` (${days})`)}</dl></div>`;
   $$('.ins').forEach((c,i)=>{
-    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}</dl></div>`;
+    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}${row('职业|Occupation · Pekerjaan',g(c,'occ'))}</dl></div>`;
     nomsOf(c).forEach((m,j)=>{m.dataset.rid=m.dataset.rid||('n'+(++uid));
       h+=`<div class="p" style="background:var(--nom)"><h3>受益人 ${j+1} · Nominee（投保人 ${i+1}）<button type="button" data-go="${m.dataset.rid}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(m,'name'),1)}${row('IC|No. KP',g(m,'ic'),1)}${row('电话|Phone · Telefon',g(m,'tel'))}${row('地址|Address · Alamat',addrText(m))}${row('婚姻状态|Status · Status',g(m,'ms'))}${row('关系|Relationship · Hubungan',g(m,'rel'))}</dl></div>`});
   });
