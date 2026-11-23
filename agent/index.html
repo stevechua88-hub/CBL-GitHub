@@ -771,22 +771,26 @@ async function makePdf(){
   pages.forEach((pc,i)=>{const q=pc.getContext('2d');q.fillStyle='#8a97a0';q.font=F(400,18);
     const t=`第 ${i+1} / ${pages.length} 页 · Page ${i+1} of ${pages.length} · Muka surat ${i+1}/${pages.length}`;q.fillText(t,(PW-q.measureText(t).width)/2,PH-44)});
   const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'pt',format:'a4',compress:true});
-  pages.forEach((pc,i)=>{if(i)doc.addPage();doc.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',0,0,595.28,841.89)});
+  pages.forEach((pc,i)=>{if(i)doc.addPage();doc.addImage(pc.toDataURL('image/jpeg',.82),'JPEG',0,0,595.28,841.89)});
   const fname=`旅游保险申请_${safe(g($('.ins'),'name'))}.pdf`;
   return{blob:doc.output('blob'),fname,pages};
 }
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let pdf=null,shareFails=0;
 const inFrame=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const asciiName=()=>{const n=(g($('.ins'),'name')||'').normalize('NFKD').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30);return`Travel_Insurance_${n||'Client'}.pdf`};
 async function sendPdf(){
   const m=$('#shareMsg');m.textContent='';if(!pdf)return;
-  const file=new File([pdf.blob],pdf.fname,{type:'application/pdf'});
+  /* iPhone: WhatsApp often fails (red !) when the share carries text too, or a non-English file name — send the PDF only, English name */
+  const file=new File([pdf.blob],isIOS?asciiName():pdf.fname,{type:'application/pdf'});
   let can=false;try{can=!inFrame&&!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[file]}))}catch(e){}
-  if(can&&shareFails<2){
-    try{await navigator.share({files:[file],title:'旅游保险申请资料',text:`旅游保险申请资料 – ${g($('.ins'),'name')}`});m.textContent='✓ 已发送 · Sent · Telah dihantar';return}
+  if(can&&(isIOS||shareFails<2)){
+    try{await navigator.share(isIOS?{files:[file]}:{files:[file],title:'旅游保险申请资料',text:`旅游保险申请资料 – ${g($('.ins'),'name')}`});m.textContent='✓ 已发送 · Sent · Telah dihantar';return}
     catch(e){
       if(e&&e.name==='AbortError'){m.textContent='已取消，可以再按一次 · Cancelled, tap again · Dibatalkan, tekan semula';return}
       shareFails++;
+      if(isIOS){m.innerHTML='👆 请再按一次上面的绿色按钮「📄 发送 PDF」，然后选 WhatsApp。<span class="otl">Tap the green Send PDF button again, then choose WhatsApp. · Tekan butang hijau Hantar PDF sekali lagi, kemudian pilih WhatsApp.</span>';$('#sendPdf').scrollIntoView({behavior:'smooth',block:'center'});return}
       if(e&&e.name==='NotAllowedError'&&shareFails<2){m.innerHTML='👆 请按上面绿色按钮，选择 WhatsApp / WeChat / Telegram 发送。<span class="otl">Tap the green button above to choose an app. · Tekan butang hijau di atas untuk pilih aplikasi.</span>';$('#sendPdf').scrollIntoView({behavior:'smooth',block:'center'});return}
     }
   }
@@ -795,7 +799,7 @@ async function sendPdf(){
     try{await dl.save({filename:pdf.fname,data:pdf.blob});showSaved();return}
     catch(e){if(e&&e.code==='declined'){m.textContent='已取消，可以再按一次 · Cancelled, tap again · Dibatalkan, tekan semula';return}}
   }
-  if(!inFrame){
+  if(!inFrame&&!isIOS){
     const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.fname;document.body.appendChild(a);a.click();a.remove();showSaved();return;
   }
   m.innerHTML='这里不能直接保存 PDF。请在下面的 PDF 预览上按住（电脑：按右键）→「保存图片」，再用 WhatsApp 发送。<span class="otl">Long-press (computer: right-click) each page below → Save image, then send via WhatsApp. · Tekan lama (komputer: klik kanan) setiap halaman → Simpan imej, kemudian hantar melalui WhatsApp.</span>'+waBtn();
@@ -815,6 +819,7 @@ function showPanel(){
   $('#shareMsg').textContent='';$('#msg').classList.add('on');
 }
 async function done(){
+  const waited=!pdf;
   if(!pdf){
     $('#busy').style.display='flex';
     if(!pdfP)startPdf();await pdfP;
@@ -822,6 +827,8 @@ async function done(){
     if(!pdf){$('#err').style.display='block';$('#err').innerHTML=`<div class="l3">${L3('PDF 制作失败，请再按一次','PDF failed, please try again','PDF gagal, sila cuba lagi')}</div>`;return}
   }
   showPanel();
+  /* iPhone only opens the share menu right after a tap — if we had to wait for the PDF, ask for one more tap */
+  if(waited&&isIOS){$('#shareMsg').innerHTML='✓ PDF 已准备好，请按上面的绿色按钮「📄 发送 PDF」，然后选 WhatsApp。<span class="otl">PDF ready — tap the green Send PDF button, then choose WhatsApp. · PDF sedia — tekan butang hijau Hantar PDF, kemudian pilih WhatsApp.</span>';$('#msg').scrollIntoView({behavior:'smooth'});return}
   const go=sendPdf();
   $('#msg').scrollIntoView({behavior:'smooth'});
   await go;
