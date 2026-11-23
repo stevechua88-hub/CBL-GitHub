@@ -90,6 +90,8 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
 .note{font-size:13px;color:var(--mute);margin:10px 0 0}
 .icv{font-size:13px;margin-top:6px;border-radius:10px;line-height:1.5}
 .icv:empty{display:none}
+.emv{font-size:13px;margin-top:6px;border-radius:10px;line-height:1.5}.emv:empty{display:none}
+.emv.no{padding:10px 12px;font-weight:500;background:light-dark(#ffe9e4,#3a1a14);color:light-dark(#b3261e,#ffb4a6);border:1.5px solid var(--coral)}
 .icv.ok{color:var(--ok);font-weight:500}
 .icv.wait{color:var(--mute)}
 .icv.no,.icv.warn{padding:10px 12px;font-weight:500}
@@ -356,6 +358,7 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
     <div class="full"><label class="req"><span class="zh">姓名（与 IC 相同）</span><span class="ot">Name as per IC · Nama seperti dalam KP</span></label><input data-k="name" required></div>
     <div><label class="req"><span class="zh">IC 身份证号码</span><span class="ot">IC No. · No. Kad Pengenalan</span></label><input data-k="ic" inputmode="numeric" placeholder="900101-01-1234" required></div>
     <div><label class="req"><span class="zh">手机号码</span><span class="ot">HP No. · No. Telefon</span></label><input type="tel" data-k="hp" placeholder="012-3456789" required></div>
+    <div class="full"><label class="req"><span class="zh">电邮地址</span><span class="ot">Email address · Alamat e-mel</span></label><input type="email" data-k="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="name@gmail.com" required><div class="emv"></div></div>
     <div class="full sameRow"><label class="tick"><input type="checkbox" class="same"><span><span class="zh">地址和投保人 1 相同</span><span class="ot">Same address as Insured 1 · Alamat sama seperti Diinsuranskan 1</span></span></label></div>
     <div class="full addrSlot" style="display:contents"></div>
     <div class="full"><label class="req"><span class="zh">婚姻状态</span><span class="ot">Marital status · Status perkahwinan</span></label><select data-k="ms" required class="msSel"></select></div>
@@ -633,6 +636,7 @@ function check(){
   $('#depBtn').classList.toggle('bad',!v('dep'));$('#retBtn').classList.toggle('bad',!v('ret')||v('ret')<v('dep'));
   $$('#sigList .pad').forEach(c=>{if(!c._ink){noSig++;c.classList.add('bad')}});
   $$('.ins').forEach(c=>{if(nmode(c)==='own'&&!nomsOf(c).length)noNom++});
+  const emBad=$$('[data-k="email"]').filter(i=>{const v=(i.value||'').trim(),bad=!!v&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);i.classList.toggle('bad',bad||!v);const t=i.parentNode.querySelector('.emv');if(t){t.className='emv'+(bad?' no':'');t.textContent=bad?'✗ 电邮格式不对 · Invalid email · E-mel tidak sah':''}return bad}).length;if(emBad)ok=false;
   const telBad=$$('[data-k="hp"],[data-k="tel"]').filter(i=>{i._show&&i._show();return i.value&&phoneProblem(i.value)}).length;if(telBad)ok=false;
   const icBad=[];
   people().forEach(p=>{renderIcv(p.el);if(p.ic&&icProblem(p.ic))icBad.push(p.label+(p.name?'（'+p.name+'）':''))});
@@ -641,6 +645,7 @@ function check(){
   const parts=[];
   if($$('[required].bad').length)parts.push(['请填写所有标 * 的栏位','Please fill in all * fields','Sila isi semua ruangan bertanda *']);
   if(telBad)parts.push([`有 ${telBad} 个电话号码不完整`,'Incomplete phone number','Nombor telefon tidak lengkap']);
+  if(emBad)parts.push([`有 ${emBad} 个电邮地址格式不对`,'Invalid email address','Alamat e-mel tidak sah']);
   if(noSig)parts.push([`还有 ${noSig} 位投保人未签名`,`${noSig} signature(s) missing`,`${noSig} tandatangan belum diisi`]);
   if(icBad.length)parts.push([`IC 号码不对，请更改：${esc(icBad.join('、'))}`,'Incorrect IC No.','No. KP salah']);
   if(noNom)parts.push([`有 ${noNom} 位投保人还没有受益人`,'Nominee missing','Penama belum diisi']);
@@ -655,7 +660,7 @@ function sameTxt(c){const ins=$$('.ins'),s=srcOf(c),k=ins.indexOf(s)+1,nm=nomsOf
 function build(){
   const days=upd(),L=['*申请旅游保险需要的资料*','',`去旅游的国家: ${v('dest')}`,`开始日期: ${fmtL(v('dep'))}`,`回来日期: ${fmtL(v('ret'))}（共 ${days} 天）`,`去程转机 Outbound transit: ${trnTxt()}`,`回程转机 Return transit: ${trnTxt(2)}`,`投保人数: ${$$('.ins').length} 位`];
   $$('.ins').forEach((c,i)=>{
-    L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`职业 Occupation: ${g(c,'occ')}`,`hp no: ${g(c,'hp')}`);
+    L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`职业 Occupation: ${g(c,'occ')}`,`hp no: ${g(c,'hp')}`,`Email: ${g(c,'email')}`);
     if(nmode(c)!=='own')L.push('',`nominee受益人（投保人 ${i+1}）：${sameTxt(c)}`);
     nomsOf(c).forEach((m,j)=>L.push('',`nominee受益人 ${j+1}（投保人 ${i+1}）`,`Name: ${g(m,'name')}`,`ic : ${g(m,'ic')}`,`Address: ${addrText(m)}`,`婚姻状态：${g(m,'ms')}`,`电话号码：${g(m,'tel')}`,`关系: ${g(m,'rel')}`));
   });
@@ -754,7 +759,7 @@ async function makePdf(){
   $$('.ins').forEach((ci,i)=>{
     blocks.push({title:`投保人 ${i+1}`,sub:`INSURED ${i+1} · DIINSURANSKAN ${i+1}`,th:TH.ins,rows:[
       {zh:'姓名',ot:'Name · Nama',v:g(ci,'name'),big:1},{zh:'IC 身份证号码',ot:'IC No. · No. KP',v:g(ci,'ic'),big:1},
-      {zh:'手机号码',ot:'HP No. · No. Telefon',v:g(ci,'hp')},{zh:'地址',ot:'Address · Alamat',v:addrText(ci)},
+      {zh:'手机号码',ot:'HP No. · No. Telefon',v:g(ci,'hp')},{zh:'电邮地址',ot:'Email · E-mel',v:g(ci,'email')},{zh:'地址',ot:'Address · Alamat',v:addrText(ci)},
       {zh:'婚姻状态',ot:'Marital status · Status',v:g(ci,'ms')},
       {zh:'职业',ot:'Occupation · Pekerjaan',v:g(ci,'occ')},
       ...(nmode(ci)!=='own'?[{zh:'受益人',ot:'Nominee · Penama',v:sameTxt(ci)}]:[]),
@@ -832,7 +837,7 @@ function review(){
   const days=upd(),row=(k,v,cls)=>{const[z,o]=k.split('|');return`<dt>${z}<small>${o||''}</small></dt><dd${cls?' class="k"':''}>${esc(v)}</dd>`};
   let h=`<div class="p"><h3>✈ 行程 · Trip · Perjalanan</h3><dl>${row('国家|Country · Negara',v('dest'))}${row('开始|Start · Mula',fmtL(v('dep')))}${row('回来|Return · Pulang',fmtL(v('ret'))+` (${days})`)}${row('去程转机|Outbound transit',trnTxt())}${row('回程转机|Return transit',trnTxt(2))}</dl></div>`;
   $$('.ins').forEach((c,i)=>{
-    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}${row('职业|Occupation · Pekerjaan',g(c,'occ'))}${nmode(c)!=='own'?row('受益人|Nominee · Penama',sameTxt(c)):''}</dl></div>`;
+    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('电邮|Email · E-mel',g(c,'email'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}${row('职业|Occupation · Pekerjaan',g(c,'occ'))}${nmode(c)!=='own'?row('受益人|Nominee · Penama',sameTxt(c)):''}</dl></div>`;
     nomsOf(c).forEach((m,j)=>{m.dataset.rid=m.dataset.rid||('n'+(++uid));
       h+=`<div class="p" style="background:var(--nom)"><h3>受益人 ${j+1} · Nominee（投保人 ${i+1}）<button type="button" data-go="${m.dataset.rid}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(m,'name'),1)}${row('IC|No. KP',g(m,'ic'),1)}${row('电话|Phone · Telefon',g(m,'tel'))}${row('地址|Address · Alamat',addrText(m))}${row('婚姻状态|Status · Status',g(m,'ms'))}${row('关系|Relationship · Hubungan',g(m,'rel'))}</dl></div>`});
   });
@@ -854,7 +859,7 @@ async function copy(btn){
 $('#addIns').onclick=addIns;$('#addNom').onclick=addNom;
 $('#go').onclick=review;$('#sendPdf').onclick=sendPdf;
 $('#cp').onclick=e=>copy(e.currentTarget);$('#cp2').onclick=e=>copy(e.currentTarget);
-$('#f').addEventListener('input',e=>{pdf=null;pdfP=null;e.target.classList.remove('bad');if(ADDR.includes(e.target.dataset.k))syncAll();if(e.target.dataset.k==='name')refresh();upd()});
+$('#f').addEventListener('input',e=>{pdf=null;pdfP=null;e.target.classList.remove('bad');if(e.target.dataset.k==='email'){const t=e.target.parentNode.querySelector('.emv');if(t){t.textContent='';t.className='emv'}}if(ADDR.includes(e.target.dataset.k))syncAll();if(e.target.dataset.k==='name')refresh();upd()});
 $('#f').addEventListener('submit',e=>{e.preventDefault();review()});
 addIns();addNom();
 (async()=>{for(let i=0;i<20&&!(window.claude&&claude.use);i++)await new Promise(r=>setTimeout(r,150));try{if(window.claude&&claude.use)dl=await claude.use('downloads')}catch(e){dl=null}})();
