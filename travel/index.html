@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>旅游保险申请资料</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* VOICE: friendly, bright, trustworthy — Malaysian clients of every language fill it on a phone
+   IDEA: a boarding pass — trip summary printed live as the ticket stub
+   PICTURE: boarding pass at top on a bright tropical sky-to-sea gradient
+   COLOUR and TYPE: bright teal + sky blue, coral stub, pink for nominees, violet for signature; Noto Sans SC + Outfit
+   LAYOUT: every label in three tiers: 华语 bold, then English · Bahasa Melayu small beneath */
+:root{color-scheme:light dark;
+--bg:light-dark(#eaf8fb,#0a1619);--paper:light-dark(#ffffff,#122428);--ink:light-dark(#0f2530,#e8f4f6);
+--mute:light-dark(#4f6b75,#9db7bd);--line:light-dark(#cfe6ec,#24434a);--sea:#0098c7;--sea2:#00b3a4;--coral:#ff5a36;--pink:#ff3d7f;--violet:#7c4dff;--sun:#ffc93c;--ok:#13a856;
+--field:light-dark(#f5fcfd,#0e1e22);--nom:light-dark(#fff3f7,#2a1520)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Noto Sans SC","Outfit",system-ui,sans-serif;overflow-x:clip}
+.top{background:linear-gradient(135deg,#00c2b2 0%,#0098c7 55%,#1e6bff 100%);color:#fff;padding:calc(26px + env(safe-area-inset-top)) max(5vw,16px) 96px;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;right:-80px;top:-120px;width:220px;height:220px;opacity:.9;border-radius:50%;background:radial-gradient(circle,#ffe36e 0 38%,rgba(255,227,110,.25) 39% 60%,transparent 61%)}
+.top .in,.wrap{max-width:660px;margin:0 auto;position:relative;z-index:1}
+.brand{font:500 13px/1.3 "Outfit",sans-serif;opacity:.95;letter-spacing:.01em}
+h1{font:700 clamp(30px,8vw,42px)/1.1 "Noto Sans SC",sans-serif;margin:10px 0 4px;text-wrap:balance}
+.h1s{font:600 15px/1.35 "Outfit",sans-serif;opacity:.95}
+.lead{margin:12px 0 0;font-size:15px;font-weight:500}
+.lead span{display:block;font-size:12.5px;font-weight:400;opacity:.9;margin-top:3px}
+.wrap{padding:0 max(4vw,12px) 140px;margin-top:-74px}
+.pass{background:var(--paper);border-radius:18px;box-shadow:0 18px 40px -18px rgba(0,60,90,.5);display:grid;grid-template-columns:minmax(0,1fr) 100px;overflow:hidden}
+.pass .main{padding:18px 20px}
+.route{display:flex;align-items:center;gap:12px;font:700 26px/1 "Outfit",sans-serif}
+.route .to{color:var(--sea)}.route svg{flex:none;width:46px;height:20px}
+.sub{color:var(--mute);font-size:13px;margin-top:6px;overflow-wrap:anywhere}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.meta b{display:block;font:700 18px/1.2 "Outfit",sans-serif;white-space:nowrap;margin-top:2px}.meta span{font-size:11.5px;color:var(--mute);display:block;line-height:1.3}
+.stub{background:linear-gradient(180deg,#ff7a45,#ff3d7f);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;text-align:center;padding:8px 6px}
+.stub::before{content:"";position:absolute;left:-1px;top:8px;bottom:8px;border-left:3px dotted var(--paper)}
+.stub b{font:700 32px/1 "Outfit",sans-serif}.stub span{font-size:10.5px;line-height:1.25}.stub .pax{font-size:24px;margin-top:8px}
+.zh{display:block}
+.ot{display:block;font-size:12px;font-weight:400;color:var(--mute);line-height:1.3;margin-top:1px}
+.otl{display:block;font-size:12px;color:var(--mute);margin-top:3px}
+.card{background:var(--paper);border-radius:16px;padding:20px;margin-top:16px;border:1px solid var(--line)}
+.card h2{font-size:19px;line-height:1.2;margin:0 0 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.card h2 .ot{flex-basis:100%;margin:-10px 0 0 42px;font-size:12.5px}
+.card h2 i{font:700 15px/30px "Outfit",sans-serif;font-style:normal;min-width:30px;height:30px;padding:0 6px;border-radius:15px;background:var(--sea);color:#fff;text-align:center;flex:none}
+.card h2 i.b1{background:linear-gradient(135deg,#00c2b2,#0098c7)}.card h2 i.b2{background:linear-gradient(135deg,#ff7a45,#ff3d7f)}.card h2 i.b3{background:linear-gradient(135deg,#9c6bff,#5b3df5)}
+.rm{margin-left:auto;background:transparent;color:var(--coral);min-height:36px;padding:0 8px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}.full{grid-column:1/-1}
+label{display:block;font-size:14.5px;font-weight:600}label .ot{font-weight:400}.req .zh::after{content:" *";color:var(--coral)}
+input,select,textarea{width:100%;margin-top:5px;font:16px "Noto Sans SC",sans-serif;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+textarea{min-height:72px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sea);box-shadow:0 0 0 3px rgba(0,152,199,.22)}
+input[readonly],textarea[readonly]{opacity:.8}
+.bad{border-color:var(--coral)!important}
+.pchint{font-size:13px;margin-top:4px;min-height:18px;color:var(--mute)}.pchint.ok{color:var(--ok)}.pchint.no{color:var(--coral)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.chips button{min-height:34px;padding:0 10px;font-size:13px;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:17px}
+.chips button.on{background:var(--sea);color:#fff;border-color:var(--sea)}
+.tick{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14px;margin-top:4px}
+.tick input{width:22px;height:22px;min-height:0;margin:1px 0 0;flex:none;accent-color:var(--sea)}
+button{font:500 15px "Noto Sans SC",sans-serif;border:0;border-radius:12px;min-height:46px;padding:0 16px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.addwrap{background:var(--paper);border:2px dashed var(--sea);border-radius:16px;padding:14px;margin-top:16px;text-align:center}
+.addwrap.in-card{background:transparent;margin-top:14px}
+.add{background:linear-gradient(135deg,#00c2b2,#0098c7);color:#fff;width:100%;font-weight:700;min-height:60px;font-size:17px;line-height:1.2;padding:8px 14px;box-shadow:0 8px 18px -10px rgba(0,152,199,.8)}
+.add .ot{color:rgba(255,255,255,.9);font-size:12.5px;font-weight:500}
+.add.pink{background:linear-gradient(135deg,#ff7a45,#ff3d7f);box-shadow:0 8px 18px -10px rgba(255,61,127,.8)}
+.addwrap.in-card{border-color:var(--pink)}
+.nom{background:var(--nom);border:1.5px solid light-dark(#ffc9dc,#5a2a3c);border-radius:14px;padding:16px;margin-top:14px}
+.nom:first-child{margin-top:0}
+.nom h3{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px;color:var(--pink)}
+.sec{font-size:15px;font-weight:700;margin:20px 0 4px;padding-top:16px;border-top:1px solid var(--line)}
+.sig+.sig{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.sig .sname{display:block;margin-bottom:6px;color:var(--violet)}
+.decl{background:light-dark(#f3efff,#1e1836);border-radius:12px;padding:12px 14px;margin:0 0 16px}
+.decl p{margin:0;font-size:14px;font-weight:500}.decl p+p{font-size:12.5px;font-weight:400;color:var(--mute);margin-top:4px}
+.sig canvas{display:block;width:100%;height:170px;background:#fff;border:2px dashed #b9a6ff;border-radius:12px;touch-action:none;cursor:crosshair}
+.sig canvas.bad{border-color:var(--coral)}.sig canvas.done{border-style:solid;border-color:var(--ok)}
+.sig .row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:13px;color:var(--mute)}
+.sig .row button{min-height:38px;font-size:13px;background:transparent;color:var(--coral);border:1px solid var(--coral);border-radius:9px;padding:0 12px}
+.note{font-size:13px;color:var(--mute);margin:10px 0 0}
+.icv{font-size:13px;margin-top:6px;border-radius:10px;line-height:1.5}
+.icv:empty{display:none}
+.icv.ok{color:var(--ok);font-weight:500}
+.icv.wait{color:var(--mute)}
+.icv.no,.icv.warn{padding:10px 12px;font-weight:500}
+.icv.no{background:light-dark(#ffe9e4,#3a1a14);color:light-dark(#b3261e,#ffb4a6);border:1.5px solid var(--coral)}
+.icv.warn{background:light-dark(#fff6e0,#33290f);color:light-dark(#8a5a00,#ffd58a);border:1.5px solid #e0a100}
+.icv button{display:inline-flex;margin:8px 8px 0 0;min-height:38px;font-size:13px;padding:0 12px;border-radius:9px;background:var(--coral);color:#fff}
+.icv.warn button{background:#b07a00}
+.icv button.lt2{background:transparent;color:inherit;border:1px solid currentColor}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:12px max(4vw,12px) calc(12px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{max-width:660px;margin:0 auto;display:flex;gap:10px}
+.go{flex:1;background:linear-gradient(135deg,#25d366,#13a856);color:#fff;font-weight:700;font-size:16px;line-height:1.2;padding:6px 14px}.go .ot,.cp .ot,.back .ot,.wa .ot{color:inherit;opacity:.88;font-size:11.5px;font-weight:500}
+.cp{background:var(--sea);color:#fff;line-height:1.2;padding:6px 14px}
+.bar button{min-height:56px}
+.msg{display:none;margin-top:16px;background:var(--paper);border:2px solid #25d366;border-radius:16px;padding:18px}
+.msg.on{display:block}.msg h2{margin:0 0 6px;font-size:18px}
+.step{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.msg pre{white-space:pre-wrap;font:13px/1.5 "Noto Sans SC",monospace;background:var(--field);padding:12px;border-radius:10px;max-height:240px;overflow:auto}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.big{width:100%;min-height:56px;font-size:17px}
+.wa{display:inline-flex;flex-direction:column;justify-content:center;line-height:1.2;min-height:46px;padding:6px 16px;border-radius:12px;background:#25d366;color:#fff;text-decoration:none;font-weight:700}
+.step summary{cursor:pointer;font-weight:700;list-style-position:outside}
+.sheets img{box-shadow:0 6px 18px -10px rgba(0,0,0,.4);width:100%;border-radius:10px;border:1px solid var(--line);margin-top:10px;display:block}
+.err{color:var(--coral);font-size:14px;margin-top:12px;display:none}
+.rv{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center}
+.rv.on{display:flex}
+.rv .sheet{background:var(--paper);width:100%;max-width:660px;max-height:92vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column}
+.rv .hd{padding:18px 20px 10px;border-bottom:1px solid var(--line)}
+.rv .hd h2{margin:0;font-size:20px}.rv .hd .ot2{font-size:12.5px;color:var(--mute);margin-top:3px}
+.rv .hd p{margin:8px 0 0;font-size:14px;color:var(--coral);font-weight:600}.rv .hd p span{display:block;font-size:12px;font-weight:400;margin-top:2px}
+.rv .bd{overflow:auto;padding:6px 20px 12px;flex:1}
+.rv .p{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px}
+.rv .p h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+.rv .p h3 button{line-height:1.1;margin-left:auto;min-height:34px;padding:0 12px;font-size:13px;background:transparent;color:var(--sea2);border:1px solid var(--sea2);border-radius:9px}
+.rv dl{margin:0;display:grid;grid-template-columns:7.6em minmax(0,1fr);gap:4px 10px;font-size:15px}
+.rv dt{color:var(--ink);font-size:13px;font-weight:600;padding-top:2px;line-height:1.25}.rv dt small{display:block;font-weight:400;font-size:11px;color:var(--mute)}.rv dd{margin:0;overflow-wrap:anywhere}
+.rv dd.k{font-weight:700;font-size:17px;letter-spacing:.02em}
+.rv .ft{padding:12px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.rv .ft .tick{font-size:15px;font-weight:600;margin:0 0 10px}
+.rv .ft .tick input{width:24px;height:24px}
+.rv .ft .btns{margin:0}.rv .ft .btns button{flex:1}
+.back{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.datebtn{width:100%;margin-top:5px;min-height:46px;text-align:left;font:500 16px "Noto Sans SC",sans-serif;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px 8px 40px;position:relative;line-height:1.25}
+.datebtn::before{content:"📅";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:17px}
+.datebtn.empty{color:var(--mute);font-weight:400}.datebtn small{display:block;font-size:12px;color:var(--mute);font-weight:400}
+.datebtn.bad{border-color:var(--coral)}
+.cal{position:fixed;inset:0;z-index:26;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center}
+.cal.on{display:flex}
+.cal .sheet{background:var(--paper);width:100%;max-width:460px;max-height:96vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(14px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.cal{align-items:center}.cal .sheet{border-radius:20px}}
+.chd h2{margin:0;font-size:19px}.chd h2.ret{color:var(--pink)}.chd h2.dep{color:var(--sea)}
+.chd .ot2{font-size:12.5px;color:var(--mute);margin-top:2px}
+.sel{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;margin:14px 0 10px}
+.pill{border:2px solid var(--line);background:var(--field);border-radius:12px;padding:6px 10px;text-align:left;color:var(--ink);min-height:54px}
+.pill small{display:block;font-size:11px;color:var(--mute)}.pill b{font:700 17px "Outfit",sans-serif}
+.pill.dep.on{border-color:var(--sea);box-shadow:0 0 0 3px rgba(0,152,199,.2)}.pill.ret.on{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,61,127,.2)}
+.pill.dep b{color:var(--sea)}.pill.ret b{color:var(--pink)}
+.arr{font-size:20px;color:var(--mute)}
+.mnav{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
+.mnav b{font:700 18px "Noto Sans SC",sans-serif}
+.mnav button{width:46px;height:46px;min-height:0;padding:0;border-radius:50%;background:var(--field);border:1.5px solid var(--line);color:var(--ink);font-size:24px;line-height:1}
+.mnav button:disabled{opacity:.3}
+.dow,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.dow div{text-align:center;font-size:12px;font-weight:600;color:var(--mute);padding:4px 0;line-height:1.15}.dow div small{display:block;font-size:10px;font-weight:400}
+.dow div:nth-child(n+6){color:var(--coral)}
+.days button{position:relative;height:50px;min-height:0;padding:0;border-radius:0;background:transparent;color:var(--ink);font:600 16px "Outfit",sans-serif;margin:2px 0}
+.days button span{position:relative;z-index:1;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:46px;border-radius:12px;line-height:1}
+.days button em{font-style:normal;font-size:9.5px;font-weight:700;margin-top:3px;letter-spacing:.02em}
+.days button:disabled{color:light-dark(#c3ccd0,#3c4b50);cursor:default}
+.days button.before{color:light-dark(#aab5ba,#55666b)}
+.days button.today span{box-shadow:inset 0 0 0 2px var(--sun)}
+.days button.in{background:light-dark(#dff4fb,#163a44)}
+.days button.s{background:linear-gradient(90deg,transparent 50%,light-dark(#dff4fb,#163a44) 50%)}
+.days button.e{background:linear-gradient(90deg,light-dark(#dff4fb,#163a44) 50%,transparent 50%)}
+.days button.s.e,.days button.s.solo{background:transparent}
+.days button.s span{background:var(--sea);color:#fff;box-shadow:0 4px 10px -4px rgba(0,152,199,.9)}
+.days button.e span{background:var(--pink);color:#fff;box-shadow:0 4px 10px -4px rgba(255,61,127,.9)}
+.days button.hov{background:light-dark(#fde6ef,#3a1d2a)}
+.legend{display:flex;gap:14px;justify-content:center;font-size:12px;color:var(--mute);margin:10px 0 4px;flex-wrap:wrap}
+.legend .lg{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+.lg.s{background:var(--sea)}.lg.r{background:light-dark(#dff4fb,#163a44);border:1px solid var(--line)}.lg.e{background:var(--pink)}
+.cft{display:flex;gap:10px;margin-top:10px}.cft button{flex:1;min-height:52px;line-height:1.2}
+.busy{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:30;color:#fff;font-size:16px}
+@media(max-width:520px){.grid{grid-template-columns:minmax(0,1fr)}.pass{grid-template-columns:minmax(0,1fr) 88px}.route{font-size:21px}.stub b{font-size:26px}.meta b{font-size:16px}.card{padding:16px}.nom{padding:12px}}
+@media(prefers-reduced-motion:no-preference){.route svg path{animation:fly 2.4s ease-in-out infinite}@keyframes fly{50%{transform:translateX(4px)}}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <div class="brand">CG WEALTH CONSULTANCY · Chua Boon Long 蔡文隆</div>
+  <h1>旅游保险申请资料</h1>
+  <div class="h1s">Travel Insurance Application<br>Permohonan Insurans Perjalanan</div>
+  <p class="lead">填好资料、签名后，一键发送到 WhatsApp 给代理。<span>Fill in, sign, then send to your agent via WhatsApp. · Isi, tandatangan, kemudian hantar kepada ejen melalui WhatsApp.</span></p>
+</div></div>
+
+<div class="wrap">
+  <div class="pass" aria-live="polite">
+    <div class="main">
+      <div class="route"><span>MY</span>
+        <svg viewBox="0 0 46 20" aria-hidden="true"><line x1="0" y1="10" x2="34" y2="10" stroke="currentColor" stroke-width="2" stroke-dasharray="3 4" opacity=".4"/><path d="M30 3l12 7-12 7 3-7z" fill="#ff5a36"/></svg>
+        <span class="to" id="pTo">—</span></div>
+      <div class="sub" id="pDest">去旅游的国家 · Destination · Destinasi</div>
+      <div class="meta">
+        <div><span>开始<br>Start · Mula</span><b id="pDep">—</b></div>
+        <div><span>回来<br>Return · Pulang</span><b id="pRet">—</b></div>
+      </div>
+    </div>
+    <div class="stub"><b id="pDays">0</b><span>天 · days · hari</span><b id="pPax" class="pax">1</b><span>投保人 · insured · diinsuranskan</span></div>
+  </div>
+
+  <form id="f" novalidate>
+  <section class="card">
+    <h2><i class="b1">✈</i><span class="zh">行程</span><span class="ot">Trip · Perjalanan</span></h2>
+    <div class="grid">
+      <div class="full"><label class="req" for="dest"><span class="zh">去旅游的国家</span><span class="ot">Country · Negara destinasi</span></label><input id="dest" placeholder="Japan" required></div>
+      <div><label class="req"><span class="zh">开始日期</span><span class="ot">Start date · Tarikh mula</span></label><button type="button" class="datebtn" id="depBtn" data-w="dep"></button><input type="hidden" id="dep" required></div>
+      <div><label class="req"><span class="zh">回来日期</span><span class="ot">Return date · Tarikh pulang</span></label><button type="button" class="datebtn" id="retBtn" data-w="ret"></button><input type="hidden" id="ret" required></div>
+    </div>
+  </section>
+
+  <div id="insList"></div>
+  <div class="addwrap" id="addWrap"><button type="button" class="add" id="addIns"></button><p class="note" id="addNote"></p></div>
+
+  <section class="card">
+    <h2><i class="b2">♥</i><span class="zh">受益人</span><span class="ot">Nominee · Penama</span></h2>
+    <div id="nomList"></div>
+    <div class="addwrap in-card" id="nomWrap"><button type="button" class="add pink" id="addNom"></button><p class="note" id="nomNote"></p></div>
+  </section>
+
+  <section class="card">
+    <h2><i class="b3">✍</i><span class="zh">签名</span><span class="ot">Signature · Tandatangan</span></h2>
+    <div class="decl">
+      <p>本人确认以上资料属实，并同意代理使用这些资料为本人申请旅游保险。</p>
+      <p>I confirm the above is true and consent to my agent using it to apply for travel insurance.</p>
+      <p>Saya mengesahkan maklumat di atas adalah benar dan bersetuju ejen saya menggunakannya untuk memohon insurans perjalanan.</p>
+    </div>
+    <div id="sigList"></div>
+  </section>
+
+  <div class="err" id="err"></div>
+
+  <div class="msg" id="msg">
+    <h2><span class="zh">PDF 已准备好 ✓</span><span class="ot">PDF ready · PDF sedia</span></h2>
+    <p class="note" style="margin:0 0 12px">选择 WhatsApp / WeChat / Telegram 等，再选要发给谁（例如代理 <b>蔡文隆 010-5380033</b>）。如果没有自动弹出，请按下面按钮。<span class="otl">Choose WhatsApp / WeChat / Telegram, then the contact. If nothing pops up, tap below. · Pilih WhatsApp / WeChat / Telegram, kemudian penerima. Jika tiada paparan, tekan di bawah.</span></p>
+    <button type="button" class="go big" id="sendPdf"><span class="zh">📄 发送 PDF</span><span class="ot">Send PDF · Hantar PDF</span></button>
+    <p class="note" id="shareMsg"></p>
+    <div class="step">
+      <b><span class="zh">PDF 预览</span><span class="ot">Preview · Pratonton</span></b>
+      <div class="sheets" id="preview"></div>
+    </div>
+    <details class="step"><summary><span class="zh">备用：直接发文字给代理</span><span class="ot">Backup: send as text · Sandaran: hantar teks</span></summary>
+      <pre id="out"></pre>
+      <div class="btns"><a class="wa" id="wa" href="#" target="_blank" rel="noopener"><span class="zh">打开 WhatsApp 发送</span><span class="ot">Open WhatsApp · Buka WhatsApp</span></a><button type="button" class="cp" id="cp2"><span class="zh">复制资料</span><span class="ot">Copy · Salin</span></button></div>
+    </details>
+  </div>
+  </form>
+</div>
+
+<div class="bar"><div class="in">
+  <button type="button" class="cp" id="cp"><span class="zh">复制</span><span class="ot">Copy · Salin</span></button>
+  <button type="button" class="go" id="go"><span class="zh">完成并发送</span><span class="ot">Submit · Hantar</span></button>
+</div></div>
+<div class="busy" id="busy">正在处理… · Processing… · Sedang diproses…</div>
+
+<div class="cal" id="cal" role="dialog" aria-modal="true" aria-labelledby="calT">
+  <div class="sheet">
+    <div class="chd"><h2 id="calT"></h2><div class="ot2" id="calS"></div></div>
+    <div class="sel">
+      <button type="button" class="pill dep" id="pillDep"><small>开始 · Start · Mula</small><b id="pillDepV">—</b></button>
+      <span class="arr">→</span>
+      <button type="button" class="pill ret" id="pillRet"><small>回来 · Return · Pulang</small><b id="pillRetV">—</b></button>
+    </div>
+    <div class="mnav"><button type="button" id="calPrev" aria-label="上个月 Previous month">‹</button><b id="calM"></b><button type="button" id="calNext" aria-label="下个月 Next month">›</button></div>
+    <div class="dow"></div>
+    <div class="days" id="calD"></div>
+    <div class="legend"><span><i class="lg s"></i>开始 Start</span><span><i class="lg r"></i>旅程 Trip</span><span><i class="lg e"></i>回来 Return</span></div>
+    <div class="cft"><button type="button" class="back" id="calClear"><span class="zh">清除</span><span class="ot">Clear · Padam</span></button><button type="button" class="go" id="calDone"><span class="zh">完成</span><span class="ot">Done · Selesai</span></button></div>
+  </div>
+</div>
+
+<div class="rv" id="rv" role="dialog" aria-modal="true" aria-labelledby="rvT">
+  <div class="sheet">
+    <div class="hd"><h2 id="rvT">发送前，请检查有没有打错字</h2>
+      <div class="ot2">Please check for typing mistakes before sending · Sila semak kesilapan ejaan sebelum menghantar</div>
+      <p>特别是姓名和 IC 号码，要和身份证上的一模一样。<span>Name and IC must match the IC exactly. · Nama dan No. KP mesti sama seperti kad pengenalan.</span></p></div>
+    <div class="bd" id="rvBody"></div>
+    <div class="ft">
+      <label class="tick big"><input type="checkbox" id="rvOk"><span><span class="zh">我已逐项检查，资料全部正确</span><span class="ot">I have checked, all details are correct · Saya telah menyemak, semua maklumat betul</span></span></label>
+      <div class="btns"><button type="button" class="back" id="rvBack"><span class="zh">返回修改</span><span class="ot">Edit · Ubah</span></button><button type="button" class="go" id="rvGo" disabled><span class="zh">确认无误，发送</span><span class="ot">Confirm &amp; send · Sahkan &amp; hantar</span></button></div>
+    </div>
+  </div>
+</div>
+
+<template id="tAddr">
+  <div class="full"><label class="req"><span class="zh">地址（门牌、路名、花园）</span><span class="ot">Address · Alamat</span></label><textarea data-k="addr" required placeholder="No. 12, Jalan Bakri 3, Taman Bakri"></textarea></div>
+  <div><label class="req"><span class="zh">邮区</span><span class="ot">Postcode · Poskod</span></label><input data-k="pc" inputmode="numeric" maxlength="5" placeholder="84000" required><div class="pchint"></div><div class="chips"></div></div>
+  <div><label class="req"><span class="zh">县城</span><span class="ot">Town · Bandar</span></label><input data-k="city" required></div>
+  <div class="full"><label class="req"><span class="zh">州属</span><span class="ot">State · Negeri</span></label><input data-k="state" required></div>
+</template>
+
+<template id="tMs"><option value="">请选择 · Select · Pilih</option><option value="单身 Single">单身 · Single · Bujang</option><option value="已婚 Married">已婚 · Married · Berkahwin</option><option value="离婚 Divorced">离婚 · Divorced · Bercerai</option><option value="丧偶 Widowed">丧偶 · Widowed · Balu / Duda</option></template>
+
+<template id="tIns">
+<section class="card ins">
+  <h2><i class="no b1">1</i><span class="ttl"></span><button type="button" class="rm rmIns">删除 · Delete · Padam</button></h2>
+  <div class="grid">
+    <div class="full"><label class="req"><span class="zh">姓名（与 IC 相同）</span><span class="ot">Name as per IC · Nama seperti dalam KP</span></label><input data-k="name" required></div>
+    <div><label class="req"><span class="zh">IC 身份证号码</span><span class="ot">IC No. · No. Kad Pengenalan</span></label><input data-k="ic" inputmode="numeric" placeholder="900101-01-1234" required></div>
+    <div><label class="req"><span class="zh">手机号码</span><span class="ot">HP No. · No. Telefon</span></label><input type="tel" data-k="hp" placeholder="012-3456789" required></div>
+    <div class="full sameRow"><label class="tick"><input type="checkbox" class="same"><span><span class="zh">地址和投保人 1 相同</span><span class="ot">Same address as Insured 1 · Alamat sama seperti Diinsuranskan 1</span></span></label></div>
+    <div class="full addrSlot" style="display:contents"></div>
+    <div class="full"><label class="req"><span class="zh">婚姻状态</span><span class="ot">Marital status · Status perkahwinan</span></label><select data-k="ms" required class="msSel"></select></div>
+  </div>
+</section>
+</template>
+
+<template id="tNom">
+<div class="nom">
+  <h3><span class="ttl"></span><button type="button" class="rm rmNom">删除 · Delete · Padam</button></h3>
+  <div class="grid">
+    <div class="full owner"><label class="req"><span class="zh">这位受益人属于</span><span class="ot">Nominee for · Penama untuk</span></label><select data-k="owner" class="own"></select></div>
+    <div class="full"><label class="req"><span class="zh">姓名（与 IC 相同）</span><span class="ot">Name as per IC · Nama seperti dalam KP</span></label><input data-k="name" required></div>
+    <div><label class="req"><span class="zh">IC 身份证号码</span><span class="ot">IC No. · No. Kad Pengenalan</span></label><input data-k="ic" inputmode="numeric" placeholder="900101-01-1234" required></div>
+    <div><label class="req"><span class="zh">电话号码</span><span class="ot">Phone · No. Telefon</span></label><input type="tel" data-k="tel" placeholder="012-3456789" required></div>
+    <div class="full sameRow"><label class="tick"><input type="checkbox" class="same"><span><span class="zh">地址和所属投保人相同</span><span class="ot">Same address as insured · Alamat sama seperti diinsuranskan</span></span></label></div>
+    <div class="full addrSlot" style="display:contents"></div>
+    <div><label class="req"><span class="zh">婚姻状态</span><span class="ot">Marital status · Status perkahwinan</span></label><select data-k="ms" required class="msSel"></select></div>
+    <div><label class="req"><span class="zh">关系</span><span class="ot">Relationship · Hubungan</span></label><select data-k="rel" required><option value="">请选择 · Select · Pilih</option><option value="配偶 Spouse">配偶 · Spouse · Pasangan</option><option value="孩子 Child">孩子 · Child · Anak</option><option value="父亲 Father">父亲 · Father · Bapa</option><option value="母亲 Mother">母亲 · Mother · Ibu</option><option value="兄弟姐妹 Sibling">兄弟姐妹 · Sibling · Adik-beradik</option><option value="其他 Others">其他 · Others · Lain-lain</option></select></div>
+  </div>
+</div>
+</template>
+
+<template id="tSig">
+<div class="sig"><b class="sname"></b><canvas class="pad" aria-label="签名框 Signature box"></canvas>
+<div class="row"><span class="sigS"></span><button type="button" class="clr">清除 · Clear · Padam</button></div></div>
+</template>
+
+<script id="pcdata" type="application/json">{"s":["W.P. Kuala Lumpur","Johor","Kedah","Kelantan","Melaka","Negeri Sembilan","Pahang","Pulau Pinang","Perak","Perlis","Sabah","Sarawak","Selangor","Terengganu","W.P. Labuan","W.P. Putrajaya"],"c":["Kuala Lumpur","Setapak","Ayer Baloi","Ayer Hitam","Ayer Tawar 2","Bandar Penawar","Bandar Tenggara","Batu Anam","Batu Pahat","Bekok","Benut","Bukit Gambir","Bukit Pasir","Chaah","Endau","Gelang Patah","Gerisek","Gugusan Taib Andak","Ibrahim International Business District","Jementah","Johor Bahru","Kahang","Kluang","Kota Tinggi","Kukup","Kulai","Labis","Layang-Layang","Masai","Mersing","Muar","Iskandar Puteri","Pagoh","Paloh","Panchor","Parit Jawa","Parit Raja","Parit Sulong","Pasir Gudang","Pekan Nenas","Pengerang","Pontian","Rengam","Rengit","Segamat","Semerah","Senai","Senggarang","Seri Gading","Seri Medan","Simpang Rengam","Sungai Mati","Tangkak","Tioman","Ulu Tiram","Yong Peng","Alor Setar","Baling","Bandar Baharu","Bandar Bahru","Bedong","Bukit Kayu Hitam","Changloon","Gurun","Jeniang","Jitra","Karangan","Kepala Batas","Kodiang","Kota Kuala Muda","Kota Sarang Semut","Kuala Kedah","Kuala Ketil","Kuala Nerang","Kuala Pegang","Kulim","Kupang","Langgar","Langkawi","Lunas","Merbok","Padang Serai","Pendang","Pokok Sena","Serdang","Sik","Simpang Empat","Sungai Petani","Yan","Ayer Lanas","Bachok","Cherang Ruku","Dabong","Gua Musang","Jeli","Kem Desa Pahlawan","Ketereh","Kota Bharu","Kuala Balah","Kuala Krai","Machang","Melor","Pasir Mas","Pasir Puteh","Pulai Chondong","Rantau Panjang","Selising","Tanah Merah","Temangan","Tumpat","Wakaf Bharu","Alor Gajah","Asahan","Ayer Keroh","Bemban","Durian Tunggal","Jasin","Kem Trendak","Kuala Sungai Baru","Lubok China","Masjid Tanah","Melaka","Merlimau","Selandar","Sungai Rambai","Sungai Udang","Tanjong Kling","Bahau","Bandar Baru Enstek","Bandar Seri Jempol","Batu Kikir","Gemas","Gemencheh","Johol","Kota","Kuala Klawang","Kuala Pilah","Labu","Linggi","Mantin","Nilai","Port Dickson","Pusat Bandar Palong","Rantau","Rembau","Rompin","Seremban","Simpang Durian","Simpang Pertang","Si Rusa","Tampin","Tanjong Ipoh","Balok","Bandar Pusat Jengka","Bandar Tun Abdul Razak","Benta","Bentong","Brinchang","Bukit Fraser","Bukit Goh","Chenor","Chini","Damak","Dong","Gambang","Genting Highlands","Jaya Gading","Jerantut","Karak","Kemayan","Kuala Krau","Kuala Lipis","Kuala Rompin","Kuantan","Lanchang","Lurah Bilut","Maran","Mentakab","Muadzam Shah","Padang Tengku","Pekan","Raub","Ringlet","Sega","Sungai Koyan","Sungai Lembing","Sungai Ruan","Tanah Rata","Temerloh","Triang","Ayer Itam","Balik Pulau","Batu Ferringhi","Batu Maung","Bayan Lepas","Bukit Mertajam","Butterworth","Gelugor","Jelutong","Kubang Semang","Nibong Tebal","Penaga","Penang Hill","Perai","Permatang Pauh","Pulau Pinang","Simpang Ampat","Sungai Jawi","Tanjong Bungah","Tasek Gelugor","Usm Pulau Pinang","Ayer Tawar","Bagan Datoh","Bagan Serai","Bandar Seri Iskandar","Batu Gajah","Batu Kurau","Behrang Stesen","Bidor","Bota","Bruas","Changkat Jering","Changkat Keruing","Chemor","Chenderiang","Chenderong Balai","Chikus","Enggor","Gerik","Gopeng","Hutan Melintang","Intan","Ipoh","Jeram","Kampar","Kampung Gajah","Kampung Kepayang","Kamunting","Kuala Kangsar","Kuala Kurau","Kuala Sepetang","Lambor Kanan","Langkap","Lenggong","Lumut","Malim Nawar","Manong","Matang","Padang Rengas","Pangkor","Pantai Remis","Parit","Parit Buntar","Pengkalan Hulu","Pusing","Sauk","Selama","Selekoh","Seri Manjung","Simpang","Simpang Ampat Semanggol","Sitiawan","Slim River","Sungai Siput","Sungai Sumun","Sungkai","Taiping","Tanjong Malim","Tanjong Piandang","Tanjong Rambutan","Tanjong Tualang","Tapah","Tapah Road","Teluk Intan","Temoh","TLDM Lumut","Trolak","Trong","Tronoh","Ulu Bernam","Ulu Kinta","Arau","Kaki Bukit","Kangar","Kuala Perlis","Padang Besar","Beaufort","Beluran","Beverly","Bongawan","Inanam","Keningau","Kota Belud","Kota Kinabalu","Kota Kinabatangan","Kota Marudu","Kuala Penyu","Kudat","Kunak","Lahad Datu","Likas","Membakut","Menumbok","Nabawan","Pamol","Papar","Penampang","Putatan","Ranau","Sandakan","Semporna","Sipitang","Tambunan","Tamparuli","Tanjung Aru","Tenghilan","Tawau","Tenom","Tuaran","Asajaya","Balingian","Baram","Bau","Bekenu","Belaga","Belawai","Betong","Bintangor","Bintulu","Dalat","Daro","Debak","Engkilili","Julau","Kabong","Kanowit","Kapit","Kota Samarahan","Kuching","Lawas","Limbang","Lingga","Long Lama","Lubok Antu","Lundu","Lutong","Matu","Miri","Mukah","Nanga Medamit","Niah","Pusa","Pusat Mel Miri","Roban","Saratok","Sarikei","Sebauh","Sebuyau","Serian","Sibu","Sibu Jaya","Siburan","Simunjan","Song","Spaoh","Sri Aman","Sundar","Tatau","Ampang","Bandar Baru Bangi","Bandar Puncak Alam","Bangi","Banting","Batang Berjuntai","Batang Kali","Batu Caves","Beranang","Bukit Rotan","Cheras","Cyberjaya","Dengkil","Hulu Langat","Jenjarom","Kajang","Kapar","Kerling","Klang","KLIA","Kuala Kubu Baru","Kuala Selangor","Pelabuhan Klang","Petaling Jaya","Puchong","Pulau Carey","Pulau Indah","Pulau Ketam","Rasa","Rawang","Sabak Bernam","Sekinchan","Semenyih","Sepang","Serendah","Seri Kembangan","Shah Alam","Subang Airport","Subang Jaya","Sungai Ayer Tawar","Sungai Besar","Sungai Buloh","Sungai Pelek","Tanjong Karang","Tanjong Sepat","Telok Panglima Garang","Ajil","Al Muktatfi Billah Shah","Ayer Puteh","Bukit Besi","Bukit Payong","Ceneh","Chalok","Cukai","Dungun","Jerteh","Kampung Raja","Kemasek","Kerteh","Ketengah Jaya","Kijal","Kuala Berang","Kuala Besut","Kuala Terengganu","Marang","Paka","Permaisuri","Sungai Tong","Labuan","Putrajaya"],"p":{"10000":4107,"10050":4107,"10100":4107,"10150":4107,"10200":4107,"10250":4107,"10300":4107,"10350":4107,"10400":4107,"10450":4107,"10460":4107,"10470":4107,"10500":4107,"10502":4107,"10503":4107,"10504":4107,"10505":4107,"10506":4107,"10508":4107,"10512":4107,"10514":4107,"10516":4107,"10518":4107,"10524":4107,"10534":4107,"10538":4107,"10540":4107,"10542":4107,"10546":4107,"10550":4107,"10551":4107,"10552":4107,"10558":4107,"10560":4107,"10564":4107,"10566":4107,"10570":4107,"10576":4107,"10578":4107,"10582":4107,"10590":4107,"10592":4107,"10593":4107,"10594":4107,"10596":4107,"10600":4107,"10604":4107,"10609":4107,"10610":4107,"10612":4107,"10620":4107,"10622":4107,"10626":4107,"10628":4107,"10634":4107,"10646":4107,"10648":4107,"10660":4107,"10661":4107,"10662":4107,"10670":4107,"10672":4107,"10673":4107,"10674":4107,"10676":4107,"10690":4107,"10710":4107,"10720":4107,"10730":4107,"10740":4107,"10750":4107,"10760":4107,"10770":4107,"10780":4107,"10790":4107,"10800":4107,"10810":4107,"10820":4107,"10830":4107,"10840":4107,"10850":4107,"10910":4107,"10920":4107,"10990":4107,"11000":3827,"11010":3827,"11020":3827,"11050":4107,"11060":4107,"11100":3847,"11200":4167,"11300":4047,"11400":4107,"11409":4107,"11500":3807,"11600":3967,"11609":3967,"11700":3947,"11800":4207,"11900":3887,"11910":3887,"11920":3887,"11950":3887,"11960":3867,"12000":3927,"12100":3927,"12200":3927,"12300":3927,"12700":3927,"12710":3927,"12720":3927,"12990":3927,"13000":3927,"13009":3927,"13020":3927,"13050":3927,"13100":4027,"13110":4027,"13200":1347,"13210":1347,"13220":1347,"13300":4187,"13310":4187,"13400":3927,"13409":3927,"13500":4087,"13600":4067,"13700":4067,"13800":3927,"14000":3907,"14007":3907,"14009":3907,"14020":3907,"14100":4127,"14101":4127,"14110":4127,"14120":4127,"14200":4147,"14290":1182,"14300":4007,"14310":4007,"14320":4007,"14390":1182,"14400":3987,"15000":1943,"15050":1943,"15100":1943,"15150":1943,"15159":1943,"15160":1943,"15200":1943,"15300":1943,"15350":1943,"15400":1943,"15500":1943,"15502":1943,"15503":1943,"15504":1943,"15505":1943,"15506":1943,"15508":1943,"15512":1943,"15514":1943,"15516":1943,"15517":1943,"15518":1943,"15519":1943,"15520":1943,"15524":1943,"15529":1943,"15532":1943,"15534":1943,"15536":1943,"15538":1943,"15540":1943,"15546":1943,"15548":1943,"15550":1943,"15551":1943,"15556":1943,"15558":1943,"15560":1943,"15564":1943,"15570":1943,"15572":1943,"15576":1943,"15578":1943,"15582":1943,"15586":1943,"15590":1943,"15592":1943,"15594":1943,"15596":1943,"15600":1943,"15604":1943,"15606":1943,"15608":1943,"15609":1943,"15610":1943,"15612":1943,"15614":1943,"15616":1943,"15620":1943,"15622":1943,"15623":1943,"15624":1943,"15626":1943,"15628":1943,"15630":1943,"15632":1943,"15634":1943,"15644":1943,"15646":1943,"15648":1943,"15658":1943,"15660":1943,"15661":1943,"15662":1943,"15664":1943,"15670":1943,"15672":1943,"15673":1943,"15674":1943,"15676":1943,"15680":1943,"15690":1943,"15700":1943,"15710":1943,"15720":1943,"15730":1943,"15740":1943,"15988":1943,"15990":1943,"16010":1943,"16020":1803,"16030":1803,"16040":2203,"16050":1803,"16060":1803,"16070":1803,"16080":2183,"16090":1803,"16100":1943,"16109":1943,"16150":1943,"16200":2183,"16210":2183,"16250":2203,"16266":2203,"16300":1803,"16310":1803,"16320":1803,"16350":1803,"16370":1803,"16390":1803,"16400":2023,"16450":1923,"16500":1903,"16600":2083,"16700":1823,"16800":2063,"16810":2123,"17000":2043,"17007":2043,"17009":2043,"17010":2043,"17020":2043,"17030":2043,"17040":2043,"17050":2043,"17060":2043,"17070":2043,"17200":2103,"17500":2143,"17507":2143,"17509":2143,"17510":2143,"17520":2143,"17599":2143,"17600":1883,"17610":1963,"17700":1783,"18000":1983,"18020":1983,"18050":1983,"18200":1843,"18300":1863,"18400":2163,"18500":2003,"20000":8633,"20050":8633,"20080":8633,"20100":8633,"20200":8633,"20300":8633,"20400":8633,"20500":8633,"20502":8633,"20503":8633,"20504":8633,"20505":8633,"20506":8633,"20508":8633,"20512":8633,"20514":8633,"20516":8633,"20517":8633,"20518":8633,"20519":8633,"20520":8633,"20532":8633,"20534":8633,"20536":8633,"20538":8633,"20540":8633,"20542":8633,"20546":8633,"20548":8633,"20550":8633,"20551":8633,"20552":8633,"20554":8633,"20556":8633,"20560":8633,"20564":8633,"20566":8633,"20568":8633,"20570":8633,"20572":8633,"20576":8633,"20578":8633,"20582":8633,"20586":8633,"20590":8633,"20592":8633,"20596":8633,"20600":8633,"20604":8633,"20606":8633,"20608":8633,"20609":8633,"20610":8633,"20612":8633,"20614":8633,"20618":8633,"20620":8633,"20622":8633,"20626":8633,"20628":8633,"20630":8633,"20632":8633,"20646":8633,"20648":8633,"20656":8633,"20658":8633,"20660":8633,"20661":8633,"20662":8633,"20664":8633,"20668":8633,"20670":8633,"20672":8633,"20673":8633,"20674":8633,"20676":8633,"20680":8633,"20690":8633,"20698":8633,"20700":8633,"20710":8633,"20720":8633,"20900":8633,"20902":8633,"20904":8633,"20906":8633,"20908":8633,"20910":8633,"20912":8633,"20914":8633,"20916":8633,"20918":8633,"20920":8633,"20922":8633,"20924":8633,"20926":8633,"20928":8633,"20930":8633,"20990":8633,"20999":8633,"21000":8633,"21009":8633,"21010":8633,"21020":8633,"21030":8633,"21040":8633,"21050":8633,"21060":8633,"21070":8633,"21080":8633,"21090":8633,"21100":8633,"21109":8633,"21200":8633,"21209":8633,"21210":8633,"21220":8633,"21300":8633,"21309":8633,"21400":8373,"21450":8413,"21500":8713,"21600":8653,"21610":8653,"21700":8593,"21800":8293,"21810":8293,"21820":8293,"22000":8473,"22010":8473,"22020":8473,"22030":8473,"22040":8473,"22100":8693,"22107":8693,"22109":8693,"22110":8693,"22120":8693,"22200":8493,"22300":8613,"22307":8613,"22309":8613,"23000":8453,"23007":8453,"23009":8453,"23050":8453,"23100":8673,"23200":8353,"23300":8553,"23345":8553,"23400":8313,"24000":8433,"24007":8433,"24009":8433,"24010":8433,"24020":8433,"24030":8433,"24040":8433,"24050":8333,"24060":8393,"24100":8573,"24107":8573,"24109":8573,"24200":8513,"24207":8513,"24209":8513,"24210":8513,"24220":8513,"24300":8533,"25000":3466,"25020":3466,"25040":3466,"25050":3466,"25100":3466,"25150":3466,"25200":3466,"25250":3466,"25300":3466,"25320":3466,"25350":3466,"25500":3466,"25502":3466,"25503":3466,"25504":3466,"25505":3466,"25506":3466,"25508":3466,"25509":3466,"25512":3466,"25514":3466,"25516":3466,"25517":3466,"25518":3466,"25520":3466,"25524":3466,"25529":3466,"25532":3466,"25534":3466,"25536":3466,"25538":3466,"25540":3466,"25546":3466,"25548":3466,"25550":3466,"25551":3466,"25552":3466,"25556":3466,"25558":3466,"25560":3466,"25564":3466,"25570":3466,"25576":3466,"25578":3466,"25582":3466,"25584":3466,"25586":3466,"25590":3466,"25592":3466,"25594":3466,"25596":3466,"25598":3466,"25600":3466,"25604":3466,"25606":3466,"25608":3466,"25609":3466,"25610":3466,"25612":3466,"25614":3466,"25620":3466,"25622":3466,"25626":3466,"25628":3466,"25630":3466,"25632":3466,"25644":3466,"25646":3466,"25648":3466,"25656":3466,"25660":3466,"25661":3466,"25662":3466,"25670":3466,"25672":3466,"25673":3466,"25674":3466,"25676":3466,"25690":3466,"25700":3466,"25710":3466,"25720":3466,"25730":3466,"25740":3466,"25750":3466,"25990":3466,"26000":3466,"26010":3466,"26040":3466,"26050":3186,"26060":3466,"26070":3466,"26080":3046,"26090":3186,"26100":3046,"26140":3466,"26150":3046,"26180":3466,"26190":3046,"26200":3706,"26250":3326,"26300":3286,"26310":3286,"26320":3286,"26330":3286,"26340":3286,"26350":3286,"26360":3286,"26370":3286,"26400":3066,"26410":3066,"26420":3066,"26430":3066,"26440":3066,"26450":3066,"26460":3066,"26485":3066,"26490":3066,"26500":3526,"26600":3606,"26607":3606,"26609":3606,"26610":3606,"26620":3606,"26630":3606,"26640":3606,"26650":3606,"26660":3606,"26680":3606,"26690":3226,"26700":3566,"26800":3446,"26810":3446,"26820":3446,"26900":3086,"26999":3086,"27000":3346,"27010":3346,"27020":3346,"27030":3246,"27040":3346,"27050":3346,"27060":3346,"27070":3346,"27080":3066,"27090":3346,"27100":3586,"27150":3346,"27200":3426,"27207":3426,"27209":3426,"27210":3426,"27300":3106,"27310":3106,"27400":3266,"27500":3726,"27600":3626,"27607":3626,"27609":3626,"27610":3626,"27620":3626,"27630":3626,"27650":3686,"27660":3666,"27670":3626,"28000":3766,"28007":3766,"28009":3766,"28010":3766,"28020":3766,"28030":3766,"28040":3766,"28050":3406,"28100":3206,"28200":3786,"28300":3786,"28310":3786,"28320":3786,"28330":3786,"28340":3386,"28350":3786,"28380":3386,"28400":3546,"28407":3546,"28409":3546,"28500":3486,"28600":3366,"28610":3366,"28620":3366,"28700":3126,"28707":3126,"28709":3126,"28730":3126,"28740":3126,"28750":3126,"28800":3506,"30000":4648,"30010":4648,"30020":4648,"30100":4648,"30200":4648,"30205":4648,"30250":4648,"30300":4648,"30350":4648,"30400":4648,"30450":4648,"30500":4648,"30502":4648,"30503":4648,"30504":4648,"30505":4648,"30506":4648,"30508":4648,"30510":4648,"30512":4648,"30516":4648,"30517":4648,"30518":4648,"30519":4648,"30520":4648,"30524":4648,"30532":4648,"30534":4648,"30536":4648,"30540":4648,"30542":4648,"30546":4648,"30548":4648,"30550":4648,"30551":4648,"30552":4648,"30554":4648,"30556":4648,"30560":4648,"30564":4648,"30570":4648,"30576":4648,"30580":4648,"30582":4648,"30586":4648,"30590":4648,"30592":4648,"30594":4648,"30596":4648,"30600":4648,"30604":4648,"30606":4648,"30609":4648,"30610":4648,"30612":4648,"30614":4648,"30620":4648,"30621":4648,"30622":4648,"30626":4648,"30628":4648,"30630":4648,"30632":4648,"30634":4648,"30644":4648,"30646":4648,"30648":4648,"30656":4648,"30658":4648,"30660":4648,"30661":4648,"30662":4648,"30664":4648,"30668":4648,"30670":4648,"30673":4648,"30674":4648,"30676":4648,"30682":4648,"30690":4648,"30700":4648,"30710":4648,"30720":4648,"30730":4648,"30740":4648,"30750":4648,"30760":4648,"30770":4648,"30780":4648,"30790":4648,"30800":4648,"30810":4648,"30820":4648,"30830":4648,"30840":4648,"30900":4648,"30902":4648,"30904":4648,"30906":4648,"30908":4648,"30910":4648,"30912":4648,"30988":4648,"30990":4648,"31000":4308,"31007":4308,"31009":4308,"31050":5268,"31100":5268,"31120":5268,"31150":5608,"31199":5608,"31200":4468,"31250":5388,"31300":4728,"31350":4648,"31400":4648,"31407":4648,"31409":4648,"31450":4648,"31500":4648,"31550":5088,"31560":5088,"31600":4588,"31610":4588,"31650":4648,"31672":4648,"31700":4908,"31750":5568,"31800":5408,"31850":4668,"31900":4688,"31907":4688,"31909":4688,"31910":4688,"31920":4688,"31950":4688,"32000":5228,"32010":5228,"32020":5228,"32040":5168,"32050":5168,"32100":5508,"32200":4888,"32300":4988,"32400":4228,"32500":4448,"32600":4388,"32610":4288,"32700":4408,"32800":5028,"32810":5028,"32900":4828,"32999":4828,"33000":4768,"33007":4768,"33009":4768,"33010":4768,"33020":4768,"33030":4768,"33040":4768,"33100":5068,"33200":4628,"33300":4568,"33310":4568,"33320":4568,"33400":4868,"33410":4868,"33420":4868,"33500":5108,"33600":4548,"33700":4968,"33800":4928,"34000":5328,"34007":5328,"34008":5328,"34009":5328,"34010":5328,"34020":5328,"34030":5328,"34100":5128,"34120":5128,"34130":5128,"34140":2108,"34200":5048,"34250":5368,"34300":4268,"34310":4268,"34350":4788,"34400":5208,"34500":4328,"34510":4328,"34520":4328,"34600":4748,"34650":4808,"34700":5188,"34750":4948,"34800":5548,"34850":4428,"34900":5008,"34910":5008,"34950":1162,"35000":5428,"35007":5428,"35009":5428,"35300":4488,"35350":5488,"35400":5448,"35500":4368,"35600":5308,"35700":5528,"35800":5248,"35820":5248,"35900":5348,"35907":5348,"35909":5348,"35910":5348,"35950":4348,"36000":5468,"36007":5468,"36008":5468,"36009":5468,"36010":5468,"36020":5468,"36030":5468,"36100":4248,"36110":5468,"36200":5148,"36207":5148,"36209":5148,"36300":5288,"36307":5288,"36309":5288,"36400":4608,"36500":5588,"36600":4508,"36700":4848,"36750":4528,"36800":4708,"36810":4708,"39000":3746,"39007":3746,"39009":3746,"39010":3746,"39100":3146,"39200":3646,"40000":8092,"40100":8092,"40140":8092,"40150":8092,"40160":8092,"40169":8092,"40170":8092,"40179":8092,"40200":8092,"40250":8092,"40300":8092,"40350":8092,"40400":8092,"40409":8092,"40410":8092,"40440":8092,"40450":8092,"40460":8092,"40470":8092,"40490":8092,"40500":8092,"40502":8092,"40503":8092,"40505":8092,"40512":8092,"40517":8092,"40520":8092,"40529":8092,"40542":8092,"40548":8092,"40550":8092,"40551":8092,"40560":8092,"40564":8092,"40570":8092,"40572":8092,"40576":8092,"40578":8092,"40582":8092,"40590":8092,"40592":8092,"40594":8092,"40596":8092,"40598":8092,"40600":8092,"40604":8092,"40607":8092,"40608":8092,"40610":8092,"40612":8092,"40620":8092,"40622":8092,"40626":8092,"40630":8092,"40632":8092,"40646":8092,"40648":8092,"40650":8092,"40660":8092,"40664":8092,"40670":8092,"40672":8092,"40673":8092,"40674":8092,"40675":8092,"40676":8092,"40680":8092,"40690":8092,"40700":8092,"40702":8092,"40704":8092,"40706":8092,"40708":8092,"40710":8092,"40712":8092,"40714":8092,"40716":8092,"40718":8092,"40720":8092,"40722":8092,"40724":8092,"40726":8092,"40728":8092,"40730":8092,"40732":8092,"40800":8092,"40802":8092,"40804":8092,"40806":8092,"40808":8092,"40810":8092,"40900":8092,"40912":8092,"40915":8092,"40990":8092,"41000":7732,"41050":7732,"41070":7732,"41100":7732,"41150":7732,"41160":7732,"41200":7732,"41205":7732,"41250":7732,"41299":7732,"41300":7732,"41301":7732,"41400":7732,"41500":7732,"41506":7732,"41560":7732,"41586":7732,"41600":7732,"41670":7732,"41672":7732,"41700":7732,"41710":7732,"41720":7732,"41730":7732,"41750":7732,"41780":7732,"41900":7732,"41902":7732,"41904":7732,"41906":7732,"41908":7732,"41910":7732,"41912":7732,"41914":7732,"41916":7732,"41918":7732,"41990":7732,"42000":7812,"42007":7812,"42008":7812,"42009":7812,"42100":7732,"42150":7732,"42200":7692,"42209":7692,"42300":7412,"42425":8272,"42450":8092,"42500":8272,"42507":8272,"42509":8272,"42600":7652,"42610":7652,"42619":7652,"42700":7452,"42800":8252,"42900":7892,"42907":7892,"42920":7892,"42940":7912,"42960":7872,"42999":7872,"43000":7672,"43007":7672,"43009":7672,"43100":7632,"43200":7572,"43207":7572,"43300":8072,"43399":8072,"43400":1692,"43500":8012,"43558":7672,"43600":7432,"43650":7392,"43700":7532,"43701":7532,"43800":7612,"43807":7612,"43900":8032,"43950":8212,"43999":8212,"44000":7772,"44010":7772,"44020":7772,"44100":7712,"44110":7772,"44200":7932,"44300":7492,"44309":7492,"44330":7492,"45000":7792,"45010":7792,"45100":8152,"45200":7972,"45207":7972,"45209":7972,"45300":8172,"45400":7992,"45500":8232,"45600":7472,"45607":7472,"45609":7472,"45620":7472,"45630":7472,"45700":7552,"45800":4672,"46000":7832,"46040":7832,"46050":7832,"46080":7832,"46100":7832,"46150":7832,"46160":7832,"46200":7832,"46300":7832,"46350":7832,"46400":7832,"46460":7832,"46500":7832,"46505":7832,"46506":7832,"46510":7832,"46547":7832,"46549":7832,"46551":7832,"46564":7832,"46582":7832,"46598":7832,"46662":7832,"46667":7832,"46668":7832,"46672":7832,"46675":7832,"46692":7832,"46700":7832,"46710":7832,"46720":7832,"46730":7832,"46740":7832,"46750":7832,"46760":7832,"46770":7832,"46780":7832,"46781":7832,"46782":7832,"46783":7832,"46784":7832,"46785":7832,"46786":7832,"46787":7832,"46788":7832,"46789":7832,"46790":7832,"46791":7832,"46792":7832,"46793":7832,"46794":7832,"46795":7832,"46796":7832,"46797":7832,"46798":7832,"46799":7832,"46800":7832,"46801":7832,"46802":7832,"46803":7832,"46804":7832,"46805":7832,"46806":7832,"46860":7832,"46870":7832,"46960":7832,"46962":7832,"46964":7832,"46966":7832,"46968":7832,"46970":7832,"46972":7832,"46974":7832,"46976":7832,"46978":7832,"46990":7832,"47000":8192,"47020":8192,"47031":8192,"47100":7852,"47110":7852,"47120":7852,"47130":7852,"47140":7852,"47150":7852,"47160":7852,"47170":7852,"47180":7852,"47190":7852,"47200":8112,"47210":8112,"47300":7832,"47301":7832,"47304":7832,"47307":7832,"47308":7832,"47309":7832,"47310":7832,"47400":7832,"47410":7832,"47430":7832,"47500":8132,"47507":8132,"47510":8132,"47600":8132,"47601":8132,"47610":8132,"47618":8132,"47620":8132,"47630":8132,"47640":8132,"47650":8132,"47800":7832,"47801":7832,"47810":7832,"47820":7832,"47829":7832,"47830":7832,"47850":7832,"48000":7952,"48009":7952,"48010":7952,"48020":7952,"48050":7952,"48100":7952,"48200":8052,"48250":8052,"48300":7952,"48302":7952,"49000":3166,"50000":0,"50050":0,"50088":0,"50100":0,"50150":0,"50200":0,"50250":0,"50300":0,"50350":0,"50400":0,"50420":0,"50450":0,"50460":0,"50470":0,"50480":0,"50489":0,"50490":0,"50500":0,"50502":0,"50504":0,"50505":0,"50506":0,"50507":0,"50508":0,"50512":0,"50514":0,"50515":0,"50519":0,"50528":0,"50529":0,"50530":0,"50532":0,"50534":0,"50536":0,"50538":0,"50540":0,"50544":0,"50546":0,"50548":0,"50550":0,"50551":0,"50552":0,"50554":0,"50556":0,"50560":0,"50562":0,"50564":0,"50566":0,"50568":0,"50572":0,"50576":0,"50578":0,"50580":0,"50582":0,"50586":0,"50588":0,"50590":0,"50592":0,"50594":0,"50596":0,"50598":0,"50599":0,"50600":0,"50603":0,"50604":0,"50605":0,"50608":0,"50609":0,"50610":0,"50612":0,"50614":0,"50620":0,"50621":0,"50622":0,"50623":0,"50626":0,"50630":0,"50632":0,"50634":0,"50636":0,"50638":0,"50640":0,"50642":0,"50644":0,"50646":0,"50648":0,"50650":0,"50652":0,"50653":0,"50656":0,"50658":0,"50660":0,"50661":0,"50662":0,"50664":0,"50666":0,"50668":0,"50670":0,"50672":0,"50673":0,"50674":0,"50676":0,"50677":0,"50678":0,"50680":0,"50682":0,"50684":0,"50688":0,"50694":0,"50700":0,"50702":0,"50704":0,"50706":0,"50708":0,"50710":0,"50712":0,"50714":0,"50716":0,"50718":0,"50720":0,"50722":0,"50724":0,"50726":0,"50728":0,"50730":0,"50732":0,"50734":0,"50736":0,"50738":0,"50740":0,"50742":0,"50744":0,"50746":0,"50748":0,"50750":0,"50752":0,"50754":0,"50758":0,"50760":0,"50762":0,"50764":0,"50766":0,"50768":0,"50770":0,"50772":0,"50774":0,"50776":0,"50778":0,"50780":0,"50782":0,"50784":0,"50786":0,"50788":0,"50790":0,"50792":0,"50794":0,"50796":0,"50798":0,"50800":0,"50802":0,"50804":0,"50806":0,"50808":0,"50810":0,"50812":0,"50814":0,"50816":0,"50818":0,"50901":0,"50902":0,"50903":0,"50904":0,"50906":0,"50907":0,"50908":0,"50909":0,"50910":0,"50911":0,"50912":0,"50913":0,"50914":0,"50915":0,"50916":0,"50917":0,"50918":0,"50919":0,"50920":0,"50921":0,"50922":0,"50923":0,"50924":0,"50925":0,"50926":0,"50927":0,"50928":0,"50929":0,"50930":0,"50931":0,"50932":0,"50933":0,"50934":0,"50935":0,"50936":0,"50937":0,"50938":0,"50939":0,"50940":0,"50941":0,"50942":0,"50943":0,"50944":0,"50945":0,"50946":0,"50947":0,"50948":0,"50949":0,"50950":0,"50988":0,"50989":0,"50990":0,"51000":0,"51100":0,"51200":0,"51300":0,"51640":0,"51700":0,"51800":0,"51900":0,"51990":0,"52000":0,"52100":0,"52109":0,"52200":0,"52210":0,"52220":0,"53000":0,"53100":0,"53200":0,"53300":20,"53500":0,"53700":0,"53800":0,"53990":0,"54000":0,"54050":0,"54100":0,"54200":0,"54540":0,"55000":0,"55100":0,"55188":0,"55200":0,"55220":0,"55300":0,"55330":0,"55555":8132,"55700":0,"55710":0,"55720":0,"55900":0,"55902":0,"55904":0,"55906":0,"55908":0,"55910":0,"55912":0,"55914":0,"55916":0,"55918":0,"55920":0,"55922":0,"55924":0,"55926":0,"55928":0,"55930":0,"55932":0,"55934":0,"55990":0,"56000":0,"56100":0,"57000":0,"57100":0,"57200":0,"57700":0,"57990":0,"58000":0,"58100":0,"58200":0,"58209":0,"58700":0,"58990":0,"59000":0,"59001":0,"59100":0,"59200":0,"59206":0,"59700":0,"59800":0,"59990":0,"60000":0,"62000":8755,"62007":8755,"62050":8755,"62052":8755,"62100":8755,"62150":8755,"62200":8755,"62250":8755,"62300":8755,"62500":8755,"62502":8755,"62503":8755,"62504":8755,"62505":8755,"62506":8755,"62510":8755,"62512":8755,"62514":8755,"62516":8755,"62517":8755,"62518":8755,"62519":8755,"62520":8755,"62522":8755,"62524":8755,"62526":8755,"62527":8755,"62529":8755,"62530":8755,"62532":8755,"62536":8755,"62539":8755,"62540":8755,"62542":8755,"62546":8755,"62550":8755,"62551":8755,"62570":8755,"62574":8755,"62576":8755,"62578":8755,"62582":8755,"62584":8755,"62590":8755,"62592":8755,"62594":8755,"62596":8755,"62602":8755,"62604":8755,"62605":8755,"62606":8755,"62616":8755,"62618":8755,"62620":8755,"62623":8755,"62624":8755,"62628":8755,"62630":8755,"62632":8755,"62648":8755,"62652":8755,"62654":8755,"62657":8755,"62662":8755,"62668":8755,"62670":8755,"62674":8755,"62675":8755,"62676":8755,"62677":8755,"62686":8755,"62690":8755,"62692":8755,"62988":8755,"63000":7592,"63100":7592,"63200":7592,"63300":7592,"64000":7752,"68000":7372,"68100":7512,"69000":3306,"70000":2925,"70100":2925,"70200":2925,"70300":2925,"70400":2925,"70450":2925,"70500":2925,"70502":2925,"70503":2925,"70504":2925,"70505":2925,"70506":2925,"70508":2925,"70512":2925,"70516":2925,"70517":2925,"70518":2925,"70532":2925,"70534":2925,"70536":2925,"70540":2925,"70546":2925,"70548":2925,"70550":2925,"70551":2925,"70558":2925,"70560":2925,"70564":2925,"70570":2925,"70572":2925,"70576":2925,"70578":2925,"70582":2925,"70586":2925,"70590":2925,"70592":2925,"70594":2925,"70596":2925,"70600":2925,"70604":2925,"70606":2925,"70608":2925,"70609":2925,"70610":2925,"70620":2925,"70626":2925,"70628":2925,"70632":2925,"70634":2925,"70644":2925,"70646":2925,"70648":2925,"70658":2925,"70664":2925,"70670":2925,"70672":2925,"70673":2925,"70674":2925,"70676":2925,"70690":2925,"70700":2925,"70710":2925,"70720":2925,"70730":2925,"70740":2925,"70750":2925,"70990":2925,"71000":2825,"71007":2825,"71009":2825,"71010":2825,"71050":2985,"71059":2985,"71100":2865,"71109":2865,"71150":2765,"71159":2765,"71200":2865,"71209":2865,"71250":2985,"71259":2985,"71300":2885,"71309":2885,"71350":2685,"71359":2685,"71400":2885,"71409":2885,"71450":2925,"71459":2925,"71500":3025,"71509":3025,"71550":3025,"71559":3025,"71600":2705,"71609":2705,"71650":2705,"71659":2705,"71700":2785,"71707":2785,"71709":2785,"71750":2785,"71759":2785,"71760":2565,"71770":2925,"71800":2805,"71807":2805,"71809":2805,"71850":2805,"71900":2745,"71907":2745,"71909":2745,"71950":2925,"71960":2825,"71999":2825,"72000":2725,"72007":2725,"72009":2725,"72100":2545,"72107":2545,"72109":2545,"72120":2585,"72127":2585,"72129":2585,"72200":2605,"72207":2605,"72209":2605,"72300":2965,"72307":2965,"72309":2965,"72400":2945,"72409":2945,"72500":2725,"72507":2725,"72509":2725,"73000":3005,"73007":3005,"73009":3005,"73100":2665,"73109":2665,"73200":2645,"73207":2645,"73209":2645,"73300":2645,"73309":2645,"73400":2625,"73409":2625,"73410":2625,"73420":2625,"73430":2845,"73440":2845,"73450":2845,"73460":2845,"73470":2845,"73480":2625,"73500":2905,"73507":2905,"73509":2905,"75000":2424,"75050":2424,"75100":2424,"75150":2424,"75200":2424,"75250":2424,"75260":2424,"75300":2424,"75350":2424,"75400":2424,"75430":2424,"75450":2264,"75460":2424,"76100":2304,"76109":2304,"76200":2344,"76300":2504,"76400":2524,"76409":2524,"76450":2424,"77000":2324,"77007":2324,"77008":2324,"77009":2324,"77100":2244,"77109":2244,"77200":2284,"77300":2444,"77400":2484,"77500":2464,"78000":2224,"78009":2224,"78100":2384,"78200":2364,"78300":2404,"78307":2404,"78309":2404,"79000":621,"79050":621,"79100":621,"79150":621,"79200":621,"79250":621,"79502":621,"79503":621,"79504":621,"79505":621,"79511":621,"79513":621,"79514":621,"79517":621,"79518":621,"79520":621,"79521":621,"79523":621,"79532":621,"79538":621,"79540":621,"79546":621,"79548":621,"79550":621,"79552":621,"79555":621,"79570":621,"79575":621,"79576":621,"79592":621,"79601":621,"79603":621,"79605":621,"79606":621,"79612":621,"79626":621,"79630":621,"79632":621,"79646":621,"79658":621,"79660":621,"79680":621,"79681":621,"79683":621,"80000":401,"80050":401,"80100":401,"80110":401,"80150":401,"80200":401,"80250":401,"80300":401,"80350":401,"80400":401,"80500":401,"80502":401,"80503":401,"80504":401,"80505":401,"80506":401,"80508":401,"80514":401,"80516":401,"80517":401,"80518":401,"80519":401,"80520":401,"80529":401,"80530":401,"80532":401,"80534":401,"80536":401,"80538":401,"80540":401,"80542":401,"80546":401,"80548":401,"80550":401,"80552":401,"80558":401,"80560":401,"80564":401,"80568":401,"80570":401,"80576":401,"80578":401,"80584":401,"80586":401,"80590":401,"80592":401,"80594":401,"80596":401,"80600":401,"80604":401,"80606":401,"80608":401,"80610":401,"80612":401,"80620":401,"80622":401,"80626":401,"80628":401,"80630":401,"80632":401,"80644":401,"80646":401,"80648":401,"80658":401,"80660":401,"80662":401,"80664":401,"80668":401,"80670":401,"80672":401,"80673":401,"80676":401,"80700":401,"80710":401,"80720":401,"80730":401,"80750":401,"80800":401,"80888":361,"80900":401,"80902":401,"80904":401,"80906":401,"80908":401,"80988":401,"80990":401,"81000":501,"81010":501,"81020":501,"81030":501,"81040":501,"81050":501,"81100":401,"81110":401,"81120":401,"81200":401,"81250":401,"81300":401,"81310":401,"81400":921,"81410":921,"81440":121,"81450":341,"81500":781,"81550":301,"81560":301,"81600":801,"81620":801,"81650":801,"81700":761,"81750":561,"81760":561,"81800":1081,"81810":1081,"81850":541,"81900":461,"81907":461,"81910":461,"81920":81,"81930":101,"81960":101,"82000":821,"82010":821,"82020":821,"82030":821,"82100":41,"82200":201,"82300":481,"83000":161,"83010":161,"83020":161,"83030":161,"83040":161,"83050":161,"83100":861,"83200":941,"83300":961,"83400":981,"83500":741,"83600":901,"83610":901,"83700":1101,"83710":1101,"84000":601,"84007":601,"84010":601,"84020":601,"84030":601,"84040":601,"84050":601,"84100":601,"84150":701,"84160":701,"84200":601,"84300":[241,601],"84400":1021,"84409":1021,"84410":601,"84500":681,"84600":641,"84700":321,"84710":321,"84800":221,"84900":1041,"84990":1041,"85000":881,"85010":881,"85020":881,"85030":881,"85060":881,"85070":881,"85080":881,"85100":141,"85200":381,"85210":381,"85300":521,"85400":261,"86000":441,"86007":441,"86100":61,"86200":1001,"86300":841,"86400":[161,721],"86500":181,"86600":661,"86700":421,"86800":[581,1061],"86810":581,"86900":281,"86999":281,"87000":8734,"87007":8734,"87008":8734,"87010":8734,"87011":8734,"87012":8734,"87013":8734,"87014":8734,"87015":8734,"87016":8734,"87017":8734,"87018":8734,"87019":8734,"87020":8734,"87021":8734,"87022":8734,"87023":8734,"87024":8734,"87025":8734,"87026":8734,"87027":8734,"87028":8734,"87029":8734,"87030":8734,"87031":8734,"87032":8734,"87033":8734,"88000":5870,"88100":5870,"88110":5870,"88150":5870,"88200":5870,"88220":5870,"88300":5870,"88400":5870,"88450":5870,"88458":5870,"88460":5870,"88500":5870,"88502":5870,"88504":5870,"88505":5870,"88506":5870,"88508":5870,"88510":5870,"88512":5870,"88514":5870,"88516":5870,"88518":5870,"88520":5870,"88526":5870,"88527":5870,"88532":5870,"88534":5870,"88538":5870,"88540":5870,"88546":5870,"88550":5870,"88551":5870,"88552":5870,"88554":5870,"88556":5870,"88558":5870,"88560":5870,"88562":5870,"88564":5870,"88566":5870,"88568":5870,"88570":5870,"88572":5870,"88576":5870,"88580":5870,"88582":5870,"88586":5870,"88590":5870,"88592":5870,"88594":5870,"88596":5870,"88598":5870,"88600":5870,"88602":5870,"88604":5870,"88606":5870,"88608":5870,"88609":5870,"88610":5870,"88612":5870,"88614":5870,"88617":5870,"88618":5870,"88620":5870,"88621":5870,"88622":5870,"88624":5870,"88626":5870,"88628":5870,"88630":5870,"88632":5870,"88634":5870,"88644":5870,"88646":5870,"88648":5870,"88656":5870,"88658":5870,"88660":5870,"88661":5870,"88662":5870,"88670":5870,"88672":5870,"88673":5870,"88675":5870,"88676":5870,"88680":5870,"88690":5870,"88700":5770,"88721":6150,"88722":6150,"88723":6150,"88724":6150,"88725":6150,"88740":5870,"88757":5870,"88758":5870,"88759":5870,"88760":5870,"88761":5870,"88762":5870,"88763":5870,"88764":5870,"88765":5870,"88766":5870,"88767":5870,"88768":5870,"88769":5870,"88770":5870,"88771":5870,"88772":5870,"88773":5870,"88774":5870,"88775":5870,"88776":5870,"88777":5870,"88778":5870,"88779":5870,"88780":5870,"88781":5870,"88782":5870,"88783":5870,"88784":5870,"88785":5870,"88786":5870,"88787":5870,"88788":5870,"88789":5870,"88790":5870,"88800":5870,"88801":5870,"88802":5870,"88803":5870,"88804":5870,"88805":5870,"88806":5870,"88807":5870,"88808":5870,"88809":5870,"88810":5870,"88811":5870,"88812":5870,"88813":5870,"88814":5870,"88815":5870,"88816":5870,"88817":5870,"88818":5870,"88819":5870,"88820":5870,"88821":5870,"88822":5870,"88823":5870,"88824":5870,"88825":5870,"88826":5870,"88827":5870,"88828":5870,"88829":5870,"88830":5870,"88831":5870,"88832":5870,"88833":5870,"88834":5870,"88835":5870,"88836":5870,"88837":5870,"88838":5870,"88839":5870,"88840":5870,"88841":5870,"88842":5870,"88843":5870,"88844":5870,"88845":5870,"88846":5870,"88847":5870,"88848":5870,"88849":5870,"88850":5870,"88851":5870,"88852":5870,"88853":5870,"88854":5870,"88855":5870,"88856":6010,"88857":5810,"88858":6290,"88860":5870,"88861":5870,"88862":5870,"88863":5870,"88865":5870,"88866":5870,"88867":5870,"88868":5870,"88869":5870,"88870":5870,"88871":5870,"88872":5870,"88873":5870,"88874":5870,"88875":5870,"88900":5870,"88901":5870,"88902":5870,"88903":5870,"88904":5870,"88905":5870,"88906":5870,"88988":5870,"88990":5870,"88991":5870,"88992":5870,"88993":5870,"88994":5870,"88995":5870,"88996":5870,"88997":5870,"88998":5870,"88999":5870,"89000":5830,"89007":5830,"89008":5830,"89009":5830,"89050":5950,"89057":5950,"89058":5950,"89059":5950,"89100":5910,"89107":5910,"89108":5910,"89109":5910,"89150":5850,"89157":5850,"89158":5850,"89159":5850,"89200":6370,"89207":6370,"89208":6370,"89209":6370,"89250":6270,"89257":6270,"89258":6270,"89259":6270,"89260":[5770,6310],"89300":6170,"89307":6170,"89308":6170,"89309":6170,"89320":6170,"89350":6170,"89357":6170,"89500":6130,"89507":6130,"89508":6130,"89509":6130,"89600":6110,"89607":6110,"89608":6110,"89609":6110,"89650":6250,"89657":6250,"89658":6250,"89659":6250,"89700":5790,"89707":5790,"89708":5790,"89709":5790,"89720":6030,"89727":6030,"89728":6030,"89729":6030,"89740":5930,"89747":5930,"89748":5930,"89749":5930,"89760":6050,"89767":6050,"89768":6050,"89769":6050,"89800":5730,"89807":5730,"89808":5730,"89809":5730,"89850":6230,"89857":6230,"89858":6230,"89859":6230,"89900":6350,"89907":6350,"89908":6350,"89909":6350,"89950":6070,"89957":6070,"89958":6070,"89959":6070,"90000":6190,"90008":6190,"90009":6190,"90100":5750,"90107":5750,"90109":5750,"90200":5890,"90300":6190,"90307":6190,"90400":6090,"90700":6190,"90701":6190,"90702":6190,"90703":6190,"90704":6190,"90705":6190,"90706":6190,"90707":6190,"90708":6190,"90709":6190,"90711":6190,"90712":6190,"90713":6190,"90714":6190,"90715":6190,"90716":6190,"90717":6190,"90718":6190,"90719":6190,"90720":6190,"90721":6190,"90722":6190,"90723":6190,"90724":6190,"90725":6190,"90726":6190,"90727":6190,"90728":6190,"90729":6190,"90730":6190,"90731":6190,"90732":6190,"90733":6190,"90734":6190,"90735":6190,"90736":6190,"90737":6190,"90738":6190,"90739":6190,"90740":6190,"90741":6190,"91000":6330,"91007":6330,"91008":6330,"91009":6330,"91010":6330,"91011":6330,"91012":6330,"91013":6330,"91014":6330,"91015":6330,"91016":6330,"91017":6330,"91018":6330,"91019":6330,"91020":6330,"91021":6330,"91022":6330,"91023":6330,"91024":6330,"91025":6330,"91026":6330,"91027":6330,"91028":6330,"91029":6330,"91030":6330,"91031":6330,"91032":6330,"91033":6330,"91034":6330,"91035":6330,"91045":6330,"91056":6330,"91100":5990,"91108":5990,"91109":5990,"91110":5990,"91111":5990,"91112":5990,"91113":5990,"91114":5990,"91115":5990,"91116":5990,"91117":5990,"91118":5990,"91119":5990,"91120":5990,"91121":5990,"91122":5990,"91123":5990,"91124":5990,"91125":5990,"91126":5990,"91127":5990,"91128":5990,"91150":5990,"91200":5970,"91207":5970,"91209":5970,"91300":6210,"91307":6210,"91308":6210,"91309":6210,"93000":6771,"93010":6771,"93030":6771,"93050":6771,"93100":6771,"93150":6771,"93200":6771,"93250":6771,"93300":6771,"93350":6771,"93400":6771,"93450":6771,"93500":6771,"93502":6771,"93503":6771,"93504":6771,"93505":6771,"93506":6771,"93507":6771,"93508":6771,"93514":6771,"93516":6771,"93517":6771,"93518":6771,"93519":6771,"93520":6771,"93527":6771,"93529":6771,"93532":6771,"93540":6771,"93550":6771,"93551":6771,"93552":6771,"93554":6771,"93556":6771,"93558":6771,"93560":6771,"93564":6771,"93566":6771,"93570":6771,"93572":6771,"93576":6771,"93578":6771,"93582":6771,"93586":6771,"93590":6771,"93592":6771,"93594":6771,"93596":6771,"93600":6771,"93604":6771,"93606":6771,"93608":6771,"93609":6771,"93610":6771,"93612":6771,"93614":6771,"93618":6771,"93619":6771,"93620":6771,"93626":6771,"93628":6771,"93632":6771,"93634":6771,"93648":6771,"93658":6771,"93660":6771,"93661":6771,"93662":6771,"93668":6771,"93670":6771,"93672":6771,"93677":6771,"93690":6771,"93694":6771,"93700":6771,"93702":6771,"93704":6771,"93706":6771,"93708":6771,"93710":6771,"93712":6771,"93714":6771,"93716":6771,"93718":6771,"93720":6771,"93722":6771,"93724":6771,"93726":6771,"93728":6771,"93730":6771,"93732":6771,"93734":6771,"93736":6771,"93738":6771,"93740":6771,"93742":6771,"93744":6771,"93746":6771,"93748":6771,"93750":6771,"93752":6771,"93754":6771,"93756":6771,"93758":6771,"93760":6771,"93762":6771,"93764":6771,"93900":6771,"93902":6771,"93904":6771,"93906":6771,"93908":6771,"93910":6771,"93912":6771,"93914":6771,"93916":6771,"93990":6771,"94000":6451,"94007":6451,"94009":6451,"94200":7231,"94300":6751,"94500":6891,"94507":6891,"94509":6891,"94600":6391,"94650":6691,"94700":7171,"94707":7171,"94709":7171,"94750":7171,"94760":7171,"94800":7251,"94807":7251,"94809":7251,"94850":7151,"94900":6831,"94950":7031,"95000":7311,"95007":7311,"95008":7311,"95009":7311,"95300":7071,"95400":7091,"95407":7091,"95409":7091,"95500":6631,"95600":7291,"95700":6531,"95707":6531,"95709":6531,"95800":6651,"95900":6871,"96000":7191,"96007":7191,"96008":7191,"96009":7191,"96010":7211,"96100":7111,"96107":7111,"96108":7111,"96109":7111,"96150":6511,"96200":6611,"96250":6931,"96300":6591,"96307":6591,"96309":6591,"96350":6411,"96400":6971,"96410":6971,"96500":6551,"96507":6551,"96508":6551,"96509":6551,"96510":6551,"96600":6671,"96700":6711,"96707":6711,"96709":6711,"96800":6731,"96807":6731,"96809":6731,"96850":7271,"96900":6491,"96950":6491,"96999":6491,"97000":6571,"97004":6571,"97007":6571,"97008":6571,"97009":6571,"97010":6571,"97011":6571,"97012":6571,"97013":6571,"97014":6571,"97015":6571,"97100":7131,"97200":7351,"97300":6571,"98000":6951,"98007":6951,"98008":6951,"98009":6951,"98050":6431,"98057":6431,"98058":6431,"98059":6431,"98070":7051,"98100":6911,"98107":6911,"98109":6911,"98150":6471,"98157":6471,"98159":6471,"98200":7011,"98300":6851,"98700":6811,"98707":6811,"98708":6811,"98709":6811,"98750":6991,"98800":7331,"98850":6791,"98857":6791,"98859":6791,"05000":1122,"05050":1122,"05100":1122,"05150":1122,"05200":1122,"05250":1122,"05300":1122,"05350":1122,"05400":1122,"05450":1122,"05460":1122,"05500":1122,"05502":1122,"05503":1122,"05504":1122,"05505":1122,"05506":1122,"05508":1122,"05512":1122,"05514":1122,"05516":1122,"05517":1122,"05518":1122,"05520":1122,"05532":1122,"05534":1122,"05536":1122,"05538":1122,"05550":1122,"05551":1122,"05552":1122,"05556":1122,"05558":1122,"05560":1122,"05564":1122,"05576":1122,"05578":1122,"05580":1122,"05582":1122,"05586":1122,"05590":1122,"05592":1122,"05594":1122,"05600":1122,"05604":1122,"05610":1122,"05612":1122,"05614":1122,"05620":1122,"05621":1122,"05622":1122,"05626":1122,"05628":1122,"05630":1122,"05632":1122,"05644":1122,"05660":1122,"05661":1122,"05664":1122,"05670":1122,"05672":1122,"05673":1122,"05674":1122,"05675":1122,"05676":1122,"05680":1122,"05690":1122,"05696":1122,"05700":1122,"05710":1122,"05720":1122,"05990":1122,"06250":1122,"06509":1122,"06550":1122,"06570":1122,"06660":1122,"06150":62,"09100":1142,"08100":1202,"08110":1202,"06050":1222,"06010":1242,"08300":1262,"08330":1262,"08800":1262,"08320":1282,"08700":1282,"06000":1302,"06007":1302,"06009":1302,"09700":1322,"06200":1342,"06207":1342,"06209":1342,"06100":1362,"08500":1382,"08507":1382,"08509":1382,"06800":1402,"06600":1422,"09300":1442,"09310":1442,"06300":1462,"09110":1482,"09000":1502,"09007":1502,"09009":1502,"09010":1502,"09020":1502,"09200":1522,"06500":1542,"06507":1542,"07000":1562,"07007":1562,"07009":1562,"07100":1562,"09600":1582,"08400":1602,"08407":1602,"08409":1602,"09400":1622,"09410":1622,"06700":1642,"06707":1642,"06709":1642,"06710":1642,"06720":1642,"06750":1642,"06760":1642,"06350":1662,"06400":1662,"09800":1682,"09810":1682,"08200":1702,"08210":1702,"08340":1702,"06650":1722,"06680":1722,"08000":1742,"08007":1742,"08009":1742,"08010":1742,"08600":1742,"06900":1762,"06910":1762,"02600":5629,"02607":5629,"02609":5629,"02200":5649,"01000":5669,"01007":5669,"01009":5669,"01500":5669,"01502":5669,"01503":5669,"01504":5669,"01505":5669,"01506":5669,"01508":5669,"01512":5669,"01514":5669,"01516":5669,"01517":5669,"01518":5669,"01524":5669,"01529":5669,"01532":5669,"01538":5669,"01540":5669,"01546":5669,"01550":5669,"01551":5669,"01556":5669,"01560":5669,"01564":5669,"01570":5669,"01572":5669,"01576":5669,"01578":5669,"01582":5669,"01586":5669,"01590":5669,"01592":5669,"01594":5669,"01596":5669,"01598":5669,"01600":5669,"01604":5669,"01606":5669,"01608":5669,"01609":5669,"01610":5669,"01612":5669,"01614":5669,"01620":5669,"01622":5669,"01626":5669,"01628":5669,"01630":5669,"01632":5669,"01634":5669,"01644":5669,"01646":5669,"01648":5669,"01660":5669,"01664":5669,"01670":5669,"01672":5669,"01673":5669,"01674":5669,"01676":5669,"01680":5669,"01694":5669,"02400":5669,"02450":5669,"02500":5669,"02000":5689,"02100":5709,"02700":4129,"02707":4129,"02709":4129,"02800":4129}}</script>
+<script>
+{
+const AGENT='60105380033',MAX_INS=6,MAX_NOM=10;
+const $=s=>document.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const PC=JSON.parse($('#pcdata').textContent);
+const T=(zh,ot)=>`<span class="zh">${zh}</span><span class="ot">${ot}</span>`;
+let uid=0,dl=null;
+const fmt=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y.slice(2)}`};
+const fmtL=d=>{if(!d)return'';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`};
+const v=id=>($('#'+id).value||'').trim();
+const fld=(box,k)=>box.querySelector(`:scope>.grid [data-k="${k}"]`);
+const g=(box,k)=>{const el=fld(box,k);return el?(el.value||'').trim():''};
+
+/* ---------- postcode ---------- */
+function lookup(pc){const r=PC.p[pc];if(r==null)return[];return(Array.isArray(r)?r:[r]).map(x=>({city:PC.c[Math.floor(x/20)],state:PC.s[x%20]}))}
+const PCH='输入邮区，自动带出县城和州属<br>Auto-fills town &amp; state · Isi bandar &amp; negeri secara automatik';
+function initAddr(box){
+  box.querySelector('.addrSlot').replaceWith($('#tAddr').content.cloneNode(true));
+  const pc=fld(box,'pc'),hint=pc.parentElement.querySelector('.pchint'),chips=pc.parentElement.querySelector('.chips');hint.innerHTML=PCH;
+  pc.addEventListener('input',()=>{
+    pc.value=pc.value.replace(/\D/g,'').slice(0,5);chips.innerHTML='';
+    if(pc.value.length<5){hint.className='pchint';hint.innerHTML=PCH;return}
+    const r=lookup(pc.value);
+    if(!r.length){hint.className='pchint no';hint.innerHTML='找不到这个邮区，请检查或手动填写<br>Postcode not found · Poskod tidak dijumpai';return}
+    const pick=o=>{fld(box,'city').value=o.city;fld(box,'state').value=o.state;fld(box,'city').classList.remove('bad');fld(box,'state').classList.remove('bad');
+      $$('button',chips).forEach(b=>b.classList.toggle('on',b.textContent===o.city));syncAll()};
+    pick(r[0]);hint.className='pchint ok';hint.textContent=`✓ ${r[0].city}, ${r[0].state}`;
+    if(r.length>1){hint.innerHTML='✓ 请选择县城 · Choose town · Pilih bandar：';chips.innerHTML=r.map(o=>`<button type="button">${o.city}</button>`).join('');
+      $$('button',chips).forEach((b,i)=>b.onclick=()=>pick(r[i]));chips.firstChild.classList.add('on')}
+  });
+}
+const ADDR=['addr','pc','city','state'];
+function copyAddr(to,from,on){
+  ADDR.forEach(k=>{const el=fld(to,k);if(on&&from){el.value=g(from,k);el.classList.remove('bad')}el.readOnly=on});
+  const ch=fld(to,'pc').parentElement;ch.querySelector('.chips').style.display=on?'none':'';ch.querySelector('.pchint').style.display=on?'none':'';
+}
+const addrText=b=>`${g(b,'addr')}, ${g(b,'pc')} ${g(b,'city')}, ${g(b,'state')}`;
+
+/* ---------- IC check ---------- */
+const PB=new Set();for(const[a,b]of[[1,16],[21,59],[60,68],[71,72],[74,79],[82,93],[98,99]])for(let i=a;i<=b;i++)PB.add(String(i).padStart(2,'0'));
+const fmtIc=raw=>{const d=raw.replace(/\D/g,'').slice(0,12);return d.length>8?`${d.slice(0,6)}-${d.slice(6,8)}-${d.slice(8)}`:d.length>6?`${d.slice(0,6)}-${d.slice(6)}`:d};
+function icProblem(ic){
+  if(!/^\d{6}-\d{2}-\d{4}$/.test(ic))return'要 12 位数字<br>Must be 12 digits · Mesti 12 digit';
+  const mm=+ic.slice(2,4),dd=+ic.slice(4,6),yy=+ic.slice(0,2);
+  const leap=yy%4===0,dim=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+  if(mm<1||mm>12||dd<1||dd>dim[mm-1])return`前 6 位（${ic.slice(0,6)}）不是正确的出生日期<br>Invalid birth date · Tarikh lahir tidak sah`;
+  if(!PB.has(ic.slice(7,9)))return`中间 2 位（${ic.slice(7,9)}）不是正确的出生地代码<br>Invalid place-of-birth code · Kod tempat lahir tidak sah`;
+  return'';
+}
+function renderIcv(box){
+  const inp=fld(box,'ic');if(!inp)return;let el=box.querySelector(':scope>.grid .icv');
+  if(!el){el=document.createElement('div');inp.after(el)}
+  const typed=g(box,'ic'),prob=typed?icProblem(typed):'';
+  el.className='icv';inp.classList.toggle('bad',!!prob);
+  if(!typed)el.textContent='';
+  else if(prob){el.classList.add('no');el.innerHTML='✗ IC 号码不对 · IC No. incorrect · No. KP salah<br>'+prob}
+  else{el.classList.add('ok');el.textContent='✓ 格式正确 · Valid · Sah'}
+}
+/* ---------- phone ---------- */
+function phoneDigits(raw){let d=raw.replace(/\D/g,'');if(d.startsWith('60'))d='0'+d.slice(2);else if(d&&d[0]!=='0')d='0'+d;return d}
+function phoneLen(d){if(d.startsWith('011'))return 11;if(d.startsWith('01'))return 10;if(d.startsWith('03'))return 10;if(/^0[4-9]/.test(d))return 9;return 10}
+function fmtPhone(raw){
+  const d0=phoneDigits(raw);if(!d0)return'';const d=d0.slice(0,phoneLen(d0));
+  const cut=d.startsWith('01')||d.startsWith('08')?3:2;
+  return d.length>cut?d.slice(0,cut)+'-'+d.slice(cut):d;
+}
+function phoneProblem(v){const d=phoneDigits(v);if(!d)return'';return d.length===phoneLen(d)?'':'号码不完整 · Incomplete number · Nombor tidak lengkap'}
+function setupPhone(box){
+  const inp=box.querySelector(':scope>.grid [data-k="hp"],:scope>.grid [data-k="tel"]');if(!inp)return;
+  inp.maxLength=13;const tip=document.createElement('div');tip.className='icv';inp.after(tip);
+  const show=()=>{const pr=phoneProblem(inp.value);tip.className='icv'+(pr?' no':'');tip.textContent=pr?'✗ '+pr:'';inp.classList.toggle('bad',!!pr)};
+  inp.addEventListener('input',()=>{inp.value=fmtPhone(inp.value);if(inp.classList.contains('bad'))show()});
+  inp.addEventListener('blur',show);inp._show=show;
+}
+function setupIc(box){
+  const inp=fld(box,'ic');inp.maxLength=14;
+  inp.addEventListener('input',()=>{const p=inp.selectionStart,before=inp.value.length;inp.value=fmtIc(inp.value);try{inp.setSelectionRange(p+inp.value.length-before,p+inp.value.length-before)}catch(e){}renderIcv(box)});
+  renderIcv(box);
+}
+
+/* ---------- trip calendar ---------- */
+const WD=[['一','Mo'],['二','Tu'],['三','We'],['四','Th'],['五','Fr'],['六','Sa'],['日','Su']];
+const MZ=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],ME=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parse=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const today=key(new Date());
+const cal={s:'',e:'',mode:'dep',y:0,m:0};
+$('.dow').innerHTML=WD.map(w=>`<div>${w[0]}<small>${w[1]}</small></div>`).join('');
+const dayName=k=>{const d=parse(k).getDay();const w=WD[(d+6)%7];return`周${w[0]} ${w[1]}`};
+function nights(a,b){return Math.round((parse(b)-parse(a))/864e5)+1}
+function paintBtns(){
+  [['dep','#depBtn'],['ret','#retBtn']].forEach(([k,id])=>{const b=$(id),val=v(k);
+    b.classList.toggle('empty',!val);b.innerHTML=val?`${fmtL(val)}<small>${dayName(val)}</small>`:'请选择 · Select · Pilih';if(val)b.classList.remove('bad')});
+}
+function openCal(which){
+  cal.s=v('dep');cal.e=v('ret');cal.mode=(which==='ret'&&cal.s)?'ret':'dep';
+  const base=parse(cal.mode==='ret'?(cal.e||cal.s):(cal.s||today));cal.y=base.getFullYear();cal.m=base.getMonth();
+  renderCal();$('#cal').classList.add('on');document.body.style.overflow='hidden';
+}
+function closeCal(){$('#cal').classList.remove('on');if(!$('#rv').classList.contains('on'))document.body.style.overflow=''}
+function renderCal(){
+  const t=$('#calT'),sub=$('#calS');
+  if(cal.mode==='dep'){t.className='dep';t.textContent='① 请选择开始日期';sub.textContent='Choose start date · Pilih tarikh mula'}
+  else{t.className='ret';t.textContent='② 请选择回来日期';sub.textContent=`开始日期 ${fmtL(cal.s)} 已标示为蓝色 · Start date marked in blue · Tarikh mula ditanda biru`}
+  $('#pillDepV').textContent=cal.s?fmtL(cal.s):'—';$('#pillRetV').textContent=cal.e?fmtL(cal.e)+` · ${nights(cal.s,cal.e)}天`:'—';
+  $('#pillDep').classList.toggle('on',cal.mode==='dep');$('#pillRet').classList.toggle('on',cal.mode==='ret');
+  $('#calM').textContent=`${cal.y}年 ${MZ[cal.m]} · ${ME[cal.m]}`;
+  const first=new Date(cal.y,cal.m,1),lead=(first.getDay()+6)%7,dim=new Date(cal.y,cal.m+1,0).getDate();
+  $('#calPrev').disabled=key(new Date(cal.y,cal.m,1))<=today.slice(0,8)+'01';
+  let h='';for(let i=0;i<lead;i++)h+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const k=key(new Date(cal.y,cal.m,d)),cls=[];let tag='';
+    const past=k<today;
+    if(k===today)cls.push('today');
+    if(cal.mode==='ret'&&cal.s&&k<cal.s&&!past)cls.push('before');
+    if(k===cal.s){cls.push('s');tag='<em>出发</em>';if(!cal.e)cls.push('solo')}
+    if(k===cal.e){cls.push('e');tag=k===cal.s?'<em>同天</em>':'<em>回来</em>'}
+    if(cal.s&&cal.e&&k>cal.s&&k<cal.e)cls.push('in');
+    h+=`<button type="button" data-k="${k}" class="${cls.join(' ')}"${past?' disabled':''} aria-label="${fmtL(k)}${k===cal.s?' 开始 start':''}${k===cal.e?' 回来 return':''}"><span>${d}${tag}</span></button>`;
+  }
+  $('#calD').innerHTML=h;
+}
+$('#calD').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-k]');if(!b||b.disabled)return;const k=b.dataset.k;
+  if(cal.mode==='dep'||!cal.s||k<cal.s){cal.s=k;if(cal.e&&cal.e<k)cal.e='';cal.mode='ret';renderCal();return}
+  cal.e=k;renderCal();setTimeout(()=>{commitCal();closeCal()},350);
+});
+$('#calD').addEventListener('pointerover',e=>{
+  if(cal.mode!=='ret'||!cal.s||cal.e)return;const b=e.target.closest('button[data-k]');
+  $$('#calD button').forEach(x=>x.classList.toggle('hov',!!b&&!b.disabled&&x.dataset.k>cal.s&&x.dataset.k<b.dataset.k));
+});
+function commitCal(){
+  $('#dep').value=cal.s||'';$('#ret').value=cal.e||'';paintBtns();
+  $('#dep').dispatchEvent(new Event('input',{bubbles:true}));
+}
+$('#calPrev').onclick=()=>{cal.m--;if(cal.m<0){cal.m=11;cal.y--}renderCal()};
+$('#calNext').onclick=()=>{cal.m++;if(cal.m>11){cal.m=0;cal.y++}renderCal()};
+$('#pillDep').onclick=()=>{cal.mode='dep';renderCal()};
+$('#pillRet').onclick=()=>{if(cal.s){cal.mode='ret';renderCal()}};
+$('#calClear').onclick=()=>{cal.s='';cal.e='';cal.mode='dep';renderCal()};
+$('#calDone').onclick=()=>{commitCal();closeCal()};
+$('#cal').addEventListener('click',e=>{if(e.target.id==='cal'){commitCal();closeCal()}});
+$('#depBtn').onclick=()=>openCal('dep');$('#retBtn').onclick=()=>openCal('ret');
+paintBtns();
+
+/* ---------- signature ---------- */
+const SIGH='请用手指签名 · Sign with finger · Tandatangan dengan jari';
+function initPad(wrap){
+  const c=wrap.querySelector('canvas'),st=wrap.querySelector('.sigS');st.textContent=SIGH;let x=null,drawing=false;c._ink=false;
+  const fit=()=>{const r=c.getBoundingClientRect();if(!r.width)return;const dpr=window.devicePixelRatio||1,keep=c._ink?c.toDataURL():null;
+    c.width=r.width*dpr;c.height=r.height*dpr;x=c.getContext('2d');x.scale(dpr,dpr);x.lineWidth=2.6;x.lineCap='round';x.lineJoin='round';x.strokeStyle='#0d1b2a';
+    if(keep){const im=new Image();im.onload=()=>x.drawImage(im,0,0,r.width,r.height);im.src=keep}};
+  const ro=new ResizeObserver(fit);ro.observe(c);
+  const pos=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+  c.addEventListener('pointerdown',e=>{if(!x)fit();drawing=true;c.setPointerCapture(e.pointerId);const[a,b]=pos(e);x.beginPath();x.moveTo(a,b)});
+  c.addEventListener('pointermove',e=>{if(!drawing)return;const[a,b]=pos(e);x.lineTo(a,b);x.stroke();if(!c._ink){c._ink=true;c.classList.remove('bad');c.classList.add('done');st.textContent='✓ 已签名 · Signed · Ditandatangani'}});
+  const end=()=>{drawing=false};c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+  wrap.querySelector('.clr').onclick=()=>{if(x){x.save();x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);x.restore()}c._ink=false;c.classList.remove('done');st.textContent=SIGH};
+}
+
+/* ---------- people ---------- */
+function addIns(){
+  const n=$$('.ins').length;if(n>=MAX_INS)return;
+  const node=$('#tIns').content.firstElementChild.cloneNode(true);node.dataset.id='i'+(++uid);
+  initAddr(node);setupIc(node);setupPhone(node);node.querySelector('.msSel').innerHTML=$('#tMs').innerHTML;
+  const sg=$('#tSig').content.firstElementChild.cloneNode(true);$('#sigList').appendChild(sg);initPad(sg);node._sig=sg;
+  node.querySelector('.rmIns').onclick=()=>{sg.remove();node.remove();refresh()};
+  node.querySelector('.same').onchange=syncAll;
+  $('#insList').appendChild(node);refresh();
+  if(n)node.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function addNom(){
+  const list=$('#nomList');if(list.children.length>=MAX_NOM)return;
+  const node=$('#tNom').content.firstElementChild.cloneNode(true);
+  initAddr(node);setupIc(node);setupPhone(node);node.querySelector('.msSel').innerHTML=$('#tMs').innerHTML;
+  node.querySelector('.rmNom').onclick=()=>{node.remove();refresh()};
+  node.querySelector('.same').onchange=syncAll;node.querySelector('.own').onchange=syncAll;
+  list.appendChild(node);refresh();
+  if(list.children.length>1)node.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function syncAll(){
+  const ins=$$('.ins');
+  ins.forEach((c,i)=>{if(i)copyAddr(c,ins[0],c.querySelector('.same').checked)});
+  $$('.nom').forEach(m=>{const o=ins.find(c=>c.dataset.id===m.querySelector('.own').value);copyAddr(m,o,m.querySelector('.same').checked)});
+}
+function refresh(){
+  const ins=$$('.ins');
+  ins.forEach((c,i)=>{
+    c.querySelector('.no').textContent=i+1;c.querySelector('.ttl').innerHTML=T(`投保人 ${i+1}${i?`（+${i}）`:''}`,`Insured ${i+1} · Diinsuranskan ${i+1}`);
+    c.querySelector('.rmIns').style.display=i?'':'none';c.querySelector('.sameRow').style.display=i?'':'none';
+    c._sig.querySelector('.sname').textContent=`投保人 ${i+1} · Insured ${i+1} · Diinsuranskan ${i+1}${g(c,'name')?' — '+g(c,'name'):''}`;
+  });
+  const opts=ins.map((c,i)=>`<option value="${c.dataset.id}">投保人 ${i+1} · Insured ${i+1}${g(c,'name')?' · '+g(c,'name').replace(/[<>&"]/g,''):''}</option>`).join('');
+  const noms=$$('.nom');
+  noms.forEach((m,j)=>{
+    m.querySelector('.ttl').innerHTML=T(`受益人 ${j+1}${j?`（+${j}）`:''}`,`Nominee ${j+1} · Penama ${j+1}`);m.querySelector('.rmNom').style.display=j?'':'none';
+    const sel=m.querySelector('.own'),cur=sel.value;sel.innerHTML=opts;sel.value=ins.some(c=>c.dataset.id===cur)?cur:ins[0].dataset.id;
+    m.querySelector('.owner').style.display=ins.length>1?'':'none';
+  });
+  $('#addWrap').style.display=ins.length>=MAX_INS?'none':'';
+  $('#addIns').innerHTML=T(`＋${ins.length} 添加下一位投保人`,`Add next insured · Tambah diinsuranskan seterusnya`);
+  $('#addNote').innerHTML=`还可以添加 ${MAX_INS-ins.length} 位（最多 +5）<span class="otl">${MAX_INS-ins.length} more allowed · Boleh tambah ${MAX_INS-ins.length} lagi</span>`;
+  $('#nomWrap').style.display=noms.length>=MAX_NOM?'none':'';
+  $('#addNom').innerHTML=T(`＋${noms.length} 添加下一位受益人`,`Add next nominee · Tambah penama seterusnya`);
+  $('#nomNote').innerHTML=ins.length>1?'每位投保人都要有受益人，并选择「属于哪位投保人」<span class="otl">Every insured needs a nominee · Setiap diinsuranskan perlu penama</span>':'需要多一位受益人才按<span class="otl">Only if you need another nominee · Hanya jika perlu penama lain</span>';
+  syncAll();upd();
+}
+function upd(){
+  const dest=v('dest');
+  $('#pTo').textContent=dest?dest.split(/[,，、]/)[0].trim().slice(0,3).toUpperCase():'—';
+  $('#pDest').textContent=dest||'去旅游的国家 · Destination · Destinasi';
+  $('#pDep').textContent=fmt(v('dep'));$('#pRet').textContent=fmt(v('ret'));
+  let days=0;if(v('dep')&&v('ret')){days=Math.round((new Date(v('ret'))-new Date(v('dep')))/864e5)+1;if(days<0)days=0}
+  $('#pDays').textContent=days;$('#pPax').textContent=$$('.ins').length;return days;
+}
+
+/* ---------- check & build ---------- */
+function check(){
+  syncAll();let ok=true,noSig=0,noNom=0;
+  $$('[required]').forEach(el=>{if(el.closest('[style*="display: none"]'))return;const bad=!(el.value||'').trim();el.classList.toggle('bad',bad);if(bad)ok=false});
+  if(v('dep')&&v('ret')&&v('ret')<v('dep')){$('#ret').classList.add('bad');ok=false}
+  $('#depBtn').classList.toggle('bad',!v('dep'));$('#retBtn').classList.toggle('bad',!v('ret')||v('ret')<v('dep'));
+  $$('#sigList .pad').forEach(c=>{if(!c._ink){noSig++;c.classList.add('bad')}});
+  $$('.ins').forEach(c=>{if(!$$('.nom').some(m=>m.querySelector('.own').value===c.dataset.id))noNom++});
+  const telBad=$$('[data-k="hp"],[data-k="tel"]').filter(i=>{i._show&&i._show();return i.value&&phoneProblem(i.value)}).length;if(telBad)ok=false;
+  const icBad=[];
+  people().forEach(p=>{renderIcv(p.el);if(p.ic&&icProblem(p.ic))icBad.push(p.label+(p.name?'（'+p.name+'）':''))});
+  if(noSig||noNom||icBad.length)ok=false;
+  const e=$('#err');if(ok){e.style.display='none';return true}
+  const parts=[];
+  if($$('[required].bad').length)parts.push('请填写所有标 * 的栏位 · Please fill in all * fields · Sila isi semua ruangan bertanda *');
+  if(telBad)parts.push(`有 ${telBad} 个电话号码不完整 · Incomplete phone number · Nombor telefon tidak lengkap`);
+  if(noSig)parts.push(`还有 ${noSig} 位投保人未签名 · ${noSig} signature(s) missing · ${noSig} tandatangan belum diisi`);
+  if(icBad.length)parts.push(`IC 号码不对，请更改 · Incorrect IC No. · No. KP salah：${icBad.join('、')}`);
+  if(noNom)parts.push(`有 ${noNom} 位投保人还没有受益人 · Nominee missing · Penama belum diisi`);
+  e.innerHTML=parts.map(x=>'• '+x).join('<br>');e.style.display='block';
+  const b=$('.icv.no, .bad, canvas.bad');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});
+  return false;
+}
+const nomsOf=c=>$$('.nom').filter(m=>m.querySelector('.own').value===c.dataset.id);
+function build(){
+  const days=upd(),L=['*申请旅游保险需要的资料*','',`去旅游的国家: ${v('dest')}`,`开始日期: ${fmtL(v('dep'))}`,`回来日期: ${fmtL(v('ret'))}（共 ${days} 天）`,`投保人数: ${$$('.ins').length} 位`];
+  $$('.ins').forEach((c,i)=>{
+    L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`hp no: ${g(c,'hp')}`);
+    nomsOf(c).forEach((m,j)=>L.push('',`nominee受益人 ${j+1}（投保人 ${i+1}）`,`Name: ${g(m,'name')}`,`ic : ${g(m,'ic')}`,`Address: ${addrText(m)}`,`婚姻状态：${g(m,'ms')}`,`电话号码：${g(m,'tel')}`,`关系: ${g(m,'rel')}`));
+  });
+  L.push('','✍️ 投保人已签名确认以上资料属实（签名另附）。');
+  return L.join('\n');
+}
+function people(){
+  const out=[];
+  $$('.ins').forEach((c,i)=>{
+    out.push({el:c,label:`投保人 ${i+1}`,name:g(c,'name'),ic:g(c,'ic'),sig:c._sig.querySelector('.pad')});
+    nomsOf(c).forEach((m,j)=>out.push({el:m,label:`受益人 ${j+1}（投保人 ${i+1}）`,name:g(m,'name'),ic:g(m,'ic')}));
+  });
+  return out;
+}
+/* ---------- PDF ---------- */
+const safe=s=>(s||'client').replace(/[^\w一-龥]+/g,'_').slice(0,30);
+const TH={
+  trip:{head:['#ff8a3d','#ff5a36'],lab:'#fff1e8',line:'#ffb48f',ink:'#7a2e10'},
+  ins:{head:['#00b8d9','#0077e6'],lab:'#e2f5fd',line:'#8ccfee',ink:'#04507a'},
+  nom:{head:['#ff5c9a','#e8337a'],lab:'#ffe8f1',line:'#ffa6c6',ink:'#8a1645'},
+  sig:{head:['#9c6bff','#6a43f0'],lab:'#f0ebff',line:'#c2adff',ink:'#3f2399'}};
+const PW=1240,PH=1754,MX=70,LW=340;
+const F=(w,sz)=>`${w} ${sz}px "Noto Sans SC","Outfit",sans-serif`;
+function wrap(x,text,maxW){
+  const out=[];String(text).split('\n').forEach(par=>{let line='';
+    for(const ch of par.match(/[一-龥　-〿＀-￯]|[^\s一-龥]+\s*|\s+/g)||['']){
+      if(x.measureText(line+ch).width>maxW&&line){out.push(line.trimEnd());line=ch.trimStart()}else line+=ch}
+    out.push(line.trimEnd())});return out;
+}
+function rowsHeight(x,rows){
+  return rows.map(r=>{
+    if(r.sig)return 330;
+    x.font=F(500,25);const n=wrap(x,r.v||'—',PW-MX*2-LW-40).length;
+    return Math.max(84,n*36+40);
+  });
+}
+function drawBlock(x,y,title,sub,rows,th,hs){
+  const W=PW-MX*2,HH=70;
+  const gr=x.createLinearGradient(MX,0,MX+W,0);gr.addColorStop(0,th.head[0]);gr.addColorStop(1,th.head[1]);
+  x.fillStyle=gr;x.fillRect(MX,y,W,HH);
+  x.fillStyle='#fff';x.font=F(700,30);x.fillText(title,MX+24,y+44);
+  x.font=F(500,20);const tw=x.measureText(sub).width;x.fillText(sub,MX+W-24-tw,y+43);
+  let cy=y+HH;
+  rows.forEach((r,i)=>{
+    const h=hs[i];
+    x.fillStyle=th.lab;x.fillRect(MX,cy,LW,h);x.fillStyle='#fff';x.fillRect(MX+LW,cy,W-LW,h);
+    x.strokeStyle=th.line;x.lineWidth=2;x.strokeRect(MX,cy,W,h);x.beginPath();x.moveTo(MX+LW,cy);x.lineTo(MX+LW,cy+h);x.stroke();
+    x.fillStyle=th.ink;x.font=F(700,25);x.fillText(r.zh,MX+20,cy+38);
+    x.fillStyle='#5b6770';x.font=F(400,18);x.fillText(r.ot,MX+20,cy+64);
+    const vx=MX+LW+22;
+    if(r.sig){
+      x.fillStyle='#4a5560';x.font=F(400,18);
+      ['本人确认以上资料属实，并同意代理使用这些资料为本人申请旅游保险。','I confirm the above is true and consent to my agent using it to apply for travel insurance.','Saya mengesahkan maklumat di atas benar dan bersetuju ejen menggunakannya.']
+        .forEach((t,k)=>{wrap(x,t,W-LW-44).slice(0,1).forEach(l=>x.fillText(l,vx,cy+34+k*26))});
+      const c=r.sig,sw=Math.min(560,c.width),sh=Math.min(170,Math.round(c.height*sw/c.width));
+      x.drawImage(c,vx,cy+100,sw,sh);
+      x.strokeStyle='#9aa4ad';x.lineWidth=1.5;x.beginPath();x.moveTo(vx,cy+276);x.lineTo(vx+560,cy+276);x.stroke();
+      x.fillStyle='#1b2a33';x.font=F(500,20);x.fillText(`${r.name}    日期 Date Tarikh: ${new Date().toLocaleDateString('en-GB')}`,vx,cy+308);
+    }else{
+      x.fillStyle='#0f1d26';x.font=F(r.big?700:500,r.big?28:25);
+      wrap(x,r.v||'—',W-LW-40).forEach((l,k)=>x.fillText(l,vx,cy+(r.big?50:46)+k*36));
+    }
+    cy+=h;
+  });
+  x.strokeStyle=th.head[1];x.lineWidth=3;x.strokeRect(MX,y,W,cy-y);
+  return cy;
+}
+function pageHeader(x,first){
+  if(first){
+    const gr=x.createLinearGradient(0,0,PW,0);gr.addColorStop(0,'#00c2b2');gr.addColorStop(.55,'#0098c7');gr.addColorStop(1,'#1e6bff');
+    x.fillStyle=gr;x.fillRect(0,0,PW,230);
+    x.fillStyle='#ffd84a';x.beginPath();x.arc(PW-40,10,120,0,Math.PI*2);x.fill();
+    x.fillStyle='#fff';x.font=F(700,54);x.fillText('旅游保险申请资料',MX,98);
+    x.font=F(600,26);x.fillText('Travel Insurance Application · Permohonan Insurans Perjalanan',MX,142);
+    x.font=F(500,21);x.fillText('CG WEALTH CONSULTANCY · Chua Boon Long 蔡文隆 · 010-5380033',MX,186);
+    x.fillText(`提交日期 Submitted Dihantar: ${new Date().toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}`,MX,214);
+    return 270;
+  }
+  x.fillStyle='#0098c7';x.fillRect(0,0,PW,16);
+  x.fillStyle='#0f1d26';x.font=F(700,24);x.fillText('旅游保险申请资料 · Travel Insurance Application',MX,66);
+  return 100;
+}
+async function makePdf(){
+  try{await document.fonts.ready}catch(e){}
+  const pages=[];let c,x,y;
+  const newPage=()=>{c=document.createElement('canvas');c.width=PW;c.height=PH;x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,PW,PH);y=pageHeader(x,!pages.length);pages.push(c)};
+  newPage();
+  const days=upd();
+  const blocks=[{title:'行程',sub:'TRIP · PERJALANAN',th:TH.trip,rows:[
+    {zh:'去旅游的国家',ot:'Country · Negara',v:v('dest'),big:1},
+    {zh:'开始日期',ot:'Start date · Tarikh mula',v:fmtL(v('dep'))},
+    {zh:'回来日期',ot:'Return date · Tarikh pulang',v:`${fmtL(v('ret'))}（共 ${days} 天 · ${days} days · ${days} hari）`},
+    {zh:'投保人数',ot:'No. of insured · Bilangan',v:`${$$('.ins').length}`}]}];
+  $$('.ins').forEach((ci,i)=>{
+    blocks.push({title:`投保人 ${i+1}`,sub:`INSURED ${i+1} · DIINSURANSKAN ${i+1}`,th:TH.ins,rows:[
+      {zh:'姓名',ot:'Name · Nama',v:g(ci,'name'),big:1},{zh:'IC 身份证号码',ot:'IC No. · No. KP',v:g(ci,'ic'),big:1},
+      {zh:'手机号码',ot:'HP No. · No. Telefon',v:g(ci,'hp')},{zh:'地址',ot:'Address · Alamat',v:addrText(ci)},
+      {zh:'婚姻状态',ot:'Marital status · Status',v:g(ci,'ms')},
+      {zh:'签名',ot:'Signature · Tandatangan',sig:ci._sig.querySelector('.pad'),name:g(ci,'name')}]});
+    nomsOf(ci).forEach((m,j)=>blocks.push({title:`受益人 ${j+1}（投保人 ${i+1}）`,sub:`NOMINEE · PENAMA`,th:TH.nom,rows:[
+      {zh:'姓名',ot:'Name · Nama',v:g(m,'name'),big:1},{zh:'IC 身份证号码',ot:'IC No. · No. KP',v:g(m,'ic'),big:1},
+      {zh:'电话号码',ot:'Phone · No. Telefon',v:g(m,'tel')},{zh:'地址',ot:'Address · Alamat',v:addrText(m)},
+      {zh:'婚姻状态',ot:'Marital status · Status',v:g(m,'ms')},{zh:'关系',ot:'Relationship · Hubungan',v:g(m,'rel')}]}));
+  });
+  for(const b of blocks){
+    const hs=rowsHeight(x,b.rows),need=70+hs.reduce((a,c)=>a+c,0);
+    if(y+need>PH-110)newPage();
+    y=drawBlock(x,y,b.title,b.sub,b.rows,b.th,hs)+34;
+  }
+  pages.forEach((pc,i)=>{const q=pc.getContext('2d');q.fillStyle='#8a97a0';q.font=F(400,18);
+    const t=`第 ${i+1} / ${pages.length} 页 · Page ${i+1} of ${pages.length} · Muka surat ${i+1}/${pages.length}`;q.fillText(t,(PW-q.measureText(t).width)/2,PH-44)});
+  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'pt',format:'a4',compress:true});
+  pages.forEach((pc,i)=>{if(i)doc.addPage();doc.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',0,0,595.28,841.89)});
+  const fname=`旅游保险申请_${safe(g($('.ins'),'name'))}.pdf`;
+  return{blob:doc.output('blob'),fname,pages};
+}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let pdf=null,shareFails=0;
+const inFrame=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+async function sendPdf(){
+  const m=$('#shareMsg');m.textContent='';if(!pdf)return;
+  const file=new File([pdf.blob],pdf.fname,{type:'application/pdf'});
+  let can=false;try{can=!inFrame&&!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[file]}))}catch(e){}
+  if(can&&shareFails<2){
+    try{await navigator.share({files:[file],title:'旅游保险申请资料',text:`旅游保险申请资料 – ${g($('.ins'),'name')}`});m.textContent='✓ 已发送 · Sent · Telah dihantar';return}
+    catch(e){
+      if(e&&e.name==='AbortError'){m.textContent='已取消，可以再按一次 · Cancelled, tap again · Dibatalkan, tekan semula';return}
+      shareFails++;
+      if(e&&e.name==='NotAllowedError'&&shareFails<2){m.innerHTML='👆 请按上面绿色按钮，选择 WhatsApp / WeChat / Telegram 发送。<span class="otl">Tap the green button above to choose an app. · Tekan butang hijau di atas untuk pilih aplikasi.</span>';$('#sendPdf').scrollIntoView({behavior:'smooth',block:'center'});return}
+    }
+  }
+  /* no share menu here (computer / Claude link): save the PDF, then open WhatsApp to pick a contact */
+  if(dl){
+    try{await dl.save({filename:pdf.fname,data:pdf.blob});showSaved();return}
+    catch(e){if(e&&e.code==='declined'){m.textContent='已取消，可以再按一次 · Cancelled, tap again · Dibatalkan, tekan semula';return}}
+  }
+  if(!inFrame){
+    const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.fname;document.body.appendChild(a);a.click();a.remove();showSaved();return;
+  }
+  m.innerHTML='这里不能直接保存 PDF。请在下面的 PDF 预览上按住（电脑：按右键）→「保存图片」，再用 WhatsApp 发送。<span class="otl">Long-press (computer: right-click) each page below → Save image, then send via WhatsApp. · Tekan lama (komputer: klik kanan) setiap halaman → Simpan imej, kemudian hantar melalui WhatsApp.</span>'+waBtn();
+}
+function waBtn(){
+  const t=`旅游保险申请资料 – ${g($('.ins'),'name')}（PDF 附上 · PDF attached · PDF dilampirkan）`;
+  return `<div class="btns"><a class="wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(t)}"><span class="zh">打开 WhatsApp，选择发给谁</span><span class="ot">Open WhatsApp, choose contact · Buka WhatsApp, pilih penerima</span></a></div>`;
+}
+function showSaved(){
+  $('#shareMsg').innerHTML=`✓ PDF 已保存：<b>${esc(pdf.fname)}</b><br>下一步：打开 WhatsApp → 选择要发给谁 → 按 📎（电脑按 ＋）→ 文件 / Document → 选这个 PDF。<span class="otl">PDF saved. Open WhatsApp → choose contact → 📎 (computer: ＋) → Document → pick the PDF. · PDF disimpan. Buka WhatsApp → pilih penerima → 📎 (komputer: ＋) → Dokumen → pilih PDF.</span>`+waBtn();
+}
+let pdfP=null;
+function startPdf(){shareFails=0;pdf=null;pdfP=makePdf().then(r=>(pdf=r)).catch(()=>null)}
+function showPanel(){
+  const t=build();$('#out').textContent=t;$('#wa').href=`https://wa.me/${AGENT}?text=${encodeURIComponent(t)}`;
+  $('#preview').innerHTML=pdf.pages.map((p,i)=>`<img alt="PDF ${i+1}" src="${p.toDataURL('image/jpeg',.8)}">`).join('');
+  $('#shareMsg').textContent='';$('#msg').classList.add('on');
+}
+async function done(){
+  if(!pdf){
+    $('#busy').style.display='flex';
+    if(!pdfP)startPdf();await pdfP;
+    $('#busy').style.display='none';
+    if(!pdf){$('#err').style.display='block';$('#err').textContent='PDF 制作失败，请再按一次 · PDF failed, please try again · PDF gagal, sila cuba lagi';return}
+  }
+  showPanel();
+  const go=sendPdf();
+  $('#msg').scrollIntoView({behavior:'smooth'});
+  await go;
+}
+function review(){
+  if(!check())return;
+  const days=upd(),row=(k,v,cls)=>{const[z,o]=k.split('|');return`<dt>${z}<small>${o||''}</small></dt><dd${cls?' class="k"':''}>${esc(v)}</dd>`};
+  let h=`<div class="p"><h3>✈ 行程 · Trip · Perjalanan</h3><dl>${row('国家|Country · Negara',v('dest'))}${row('开始|Start · Mula',fmtL(v('dep')))}${row('回来|Return · Pulang',fmtL(v('ret'))+` (${days})`)}</dl></div>`;
+  $$('.ins').forEach((c,i)=>{
+    h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}</dl></div>`;
+    nomsOf(c).forEach((m,j)=>{m.dataset.rid=m.dataset.rid||('n'+(++uid));
+      h+=`<div class="p" style="background:var(--nom)"><h3>受益人 ${j+1} · Nominee（投保人 ${i+1}）<button type="button" data-go="${m.dataset.rid}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(m,'name'),1)}${row('IC|No. KP',g(m,'ic'),1)}${row('电话|Phone · Telefon',g(m,'tel'))}${row('地址|Address · Alamat',addrText(m))}${row('婚姻状态|Status · Status',g(m,'ms'))}${row('关系|Relationship · Hubungan',g(m,'rel'))}</dl></div>`});
+  });
+  $('#rvBody').innerHTML=h;$('#rvBody').scrollTop=0;$('#rvOk').checked=false;$('#rvGo').disabled=true;
+  $$('#rvBody [data-go]').forEach(b=>b.onclick=()=>{const id=b.dataset.go,el=$$('.ins,.nom').find(x=>x.dataset.id===id||x.dataset.rid===id);closeRv();if(el){el.scrollIntoView({behavior:'smooth',block:'start'});const n=fld(el,'name');if(n)setTimeout(()=>n.focus({preventScroll:true}),400)}});
+  $('#rv').classList.add('on');document.body.style.overflow='hidden';
+  startPdf();
+}
+function closeRv(keep){$('#rv').classList.remove('on');document.body.style.overflow='';if(!keep){pdf=null;pdfP=null}}
+$('#rvOk').onchange=e=>{$('#rvGo').disabled=!e.target.checked};
+$('#rvBack').onclick=closeRv;
+$('#rvGo').onclick=()=>{if(!$('#rvOk').checked)return;closeRv(true);done()};
+async function copy(btn){
+  if(!check())return;const t=build(),o=btn.innerHTML;
+  try{await navigator.clipboard.writeText(t);btn.innerHTML=T('已复制 ✓','Copied · Disalin')}catch(e){btn.innerHTML=T('请手动复制','Copy manually · Salin manual')}
+  setTimeout(()=>btn.innerHTML=o,2000);
+}
+
+$('#addIns').onclick=addIns;$('#addNom').onclick=addNom;
+$('#go').onclick=review;$('#sendPdf').onclick=sendPdf;
+$('#cp').onclick=e=>copy(e.currentTarget);$('#cp2').onclick=e=>copy(e.currentTarget);
+$('#f').addEventListener('input',e=>{pdf=null;pdfP=null;e.target.classList.remove('bad');if(ADDR.includes(e.target.dataset.k))syncAll();if(e.target.dataset.k==='name')refresh();upd()});
+$('#f').addEventListener('submit',e=>{e.preventDefault();review()});
+addIns();addNom();
+(async()=>{for(let i=0;i<20&&!(window.claude&&claude.use);i++)await new Promise(r=>setTimeout(r,150));try{if(window.claude&&claude.use)dl=await claude.use('downloads')}catch(e){dl=null}})();
+}
+</script>
+</body>
+</html>
