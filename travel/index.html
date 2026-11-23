@@ -125,6 +125,11 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
 .rv dt{color:var(--ink);font-size:13px;font-weight:600;padding-top:2px;line-height:1.25}.rv dt small{display:block;font-weight:400;font-size:11px;color:var(--mute)}.rv dd{margin:0;overflow-wrap:anywhere}
 .rv dd.k{font-weight:700;font-size:17px;letter-spacing:.02em}
 .rv .ft{padding:12px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.transit{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.transit .tick{margin:0;flex:none;font-size:15px;font-weight:600}
+.transit input.line{flex:1 1 180px;width:auto;border:0;border-bottom:2px solid var(--line);border-radius:0;background:transparent;padding:6px 2px;min-height:40px;box-shadow:none}
+.transit input.line:focus{outline:none;border-bottom-color:var(--sea)}
+.transit input.line.bad{border-bottom-color:var(--coral)}
 .rv .ft .tick{font-size:15px;font-weight:600;margin:0 0 10px}
 .rv .ft .tick input{width:24px;height:24px}
 .rv .ft .btns{margin:0}.rv .ft .btns button{flex:1}
@@ -244,6 +249,7 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
       <div class="full"><label class="req" for="dest"><span class="zh">去旅游的国家</span><span class="ot">Country · Negara destinasi</span></label><input id="dest" placeholder="Japan" required></div>
       <div><label class="req"><span class="zh">开始日期</span><span class="ot">Start date · Tarikh mula</span></label><button type="button" class="datebtn" id="depBtn" data-w="dep"></button><input type="hidden" id="dep" required></div>
       <div><label class="req"><span class="zh">回来日期</span><span class="ot">Return date · Tarikh pulang</span></label><button type="button" class="datebtn" id="retBtn" data-w="ret"></button><input type="hidden" id="ret" required></div>
+      <div class="full transit"><label class="tick"><input type="checkbox" id="trn"><span><span class="zh">有转机</span><span class="ot">Transit · Transit</span></span></label><input id="trnAt" class="line" placeholder="在哪里转机？ Where?" aria-label="转机国家 / 城市 Transit country / city"></div>
     </div>
   </section>
 
@@ -376,6 +382,7 @@ let uid=0,dl=null;
 const fmt=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y.slice(2)}`};
 const fmtL=d=>{if(!d)return'';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`};
 const v=id=>($('#'+id).value||'').trim();
+const trnTxt=()=>$('#trn').checked?`有 Yes${v('trnAt')?' — '+v('trnAt'):''}`:'没有 No';
 const fld=(box,k)=>box.querySelector(`:scope>.grid [data-k="${k}"]`);
 const g=(box,k)=>{const el=fld(box,k);return el?(el.value||'').trim():''};
 
@@ -607,7 +614,7 @@ function check(){
 }
 const nomsOf=c=>$$('.nom').filter(m=>m.querySelector('.own').value===c.dataset.id);
 function build(){
-  const days=upd(),L=['*申请旅游保险需要的资料*','',`去旅游的国家: ${v('dest')}`,`开始日期: ${fmtL(v('dep'))}`,`回来日期: ${fmtL(v('ret'))}（共 ${days} 天）`,`投保人数: ${$$('.ins').length} 位`];
+  const days=upd(),L=['*申请旅游保险需要的资料*','',`去旅游的国家: ${v('dest')}`,`开始日期: ${fmtL(v('dep'))}`,`回来日期: ${fmtL(v('ret'))}（共 ${days} 天）`,`转机 Transit: ${trnTxt()}`,`投保人数: ${$$('.ins').length} 位`];
   $$('.ins').forEach((c,i)=>{
     L.push('',`*投保人 ${i+1}*`,`Name : ${g(c,'name')}`,`Ic: ${g(c,'ic')}`,`Home Address: ${addrText(c)}`,`婚姻状态：${g(c,'ms')}`,`职业 Occupation: ${g(c,'occ')}`,`hp no: ${g(c,'hp')}`);
     nomsOf(c).forEach((m,j)=>L.push('',`nominee受益人 ${j+1}（投保人 ${i+1}）`,`Name: ${g(m,'name')}`,`ic : ${g(m,'ic')}`,`Address: ${addrText(m)}`,`婚姻状态：${g(m,'ms')}`,`电话号码：${g(m,'tel')}`,`关系: ${g(m,'rel')}`));
@@ -701,6 +708,7 @@ async function makePdf(){
     {zh:'去旅游的国家',ot:'Country · Negara',v:v('dest'),big:1},
     {zh:'开始日期',ot:'Start date · Tarikh mula',v:fmtL(v('dep'))},
     {zh:'回来日期',ot:'Return date · Tarikh pulang',v:`${fmtL(v('ret'))}（共 ${days} 天 · ${days} days · ${days} hari）`},
+    {zh:'转机',ot:'Transit · Transit',v:trnTxt()},
     {zh:'投保人数',ot:'No. of insured · Bilangan',v:`${$$('.ins').length}`}]}];
   $$('.ins').forEach((ci,i)=>{
     blocks.push({title:`投保人 ${i+1}`,sub:`INSURED ${i+1} · DIINSURANSKAN ${i+1}`,th:TH.ins,rows:[
@@ -780,7 +788,7 @@ async function done(){
 function review(){
   if(!check())return;
   const days=upd(),row=(k,v,cls)=>{const[z,o]=k.split('|');return`<dt>${z}<small>${o||''}</small></dt><dd${cls?' class="k"':''}>${esc(v)}</dd>`};
-  let h=`<div class="p"><h3>✈ 行程 · Trip · Perjalanan</h3><dl>${row('国家|Country · Negara',v('dest'))}${row('开始|Start · Mula',fmtL(v('dep')))}${row('回来|Return · Pulang',fmtL(v('ret'))+` (${days})`)}</dl></div>`;
+  let h=`<div class="p"><h3>✈ 行程 · Trip · Perjalanan</h3><dl>${row('国家|Country · Negara',v('dest'))}${row('开始|Start · Mula',fmtL(v('dep')))}${row('回来|Return · Pulang',fmtL(v('ret'))+` (${days})`)}${row('转机|Transit',trnTxt())}</dl></div>`;
   $$('.ins').forEach((c,i)=>{
     h+=`<div class="p"><h3>投保人 ${i+1} · Insured ${i+1}<button type="button" data-go="${c.dataset.id}">修改 · Edit</button></h3><dl>${row('姓名|Name · Nama',g(c,'name'),1)}${row('IC|No. KP',g(c,'ic'),1)}${row('电话|Phone · Telefon',g(c,'hp'))}${row('地址|Address · Alamat',addrText(c))}${row('婚姻状态|Status · Status',g(c,'ms'))}${row('职业|Occupation · Pekerjaan',g(c,'occ'))}</dl></div>`;
     nomsOf(c).forEach((m,j)=>{m.dataset.rid=m.dataset.rid||('n'+(++uid));
@@ -808,6 +816,12 @@ $('#f').addEventListener('input',e=>{pdf=null;pdfP=null;e.target.classList.remov
 $('#f').addEventListener('submit',e=>{e.preventDefault();review()});
 addIns();addNom();
 (async()=>{for(let i=0;i<20&&!(window.claude&&claude.use);i++)await new Promise(r=>setTimeout(r,150));try{if(window.claude&&claude.use)dl=await claude.use('downloads')}catch(e){dl=null}})();
+
+/* ---------- transit ---------- */
+(()=>{const cb=$('#trn'),ln=$('#trnAt');
+  const sync=()=>{ln.required=cb.checked;if(!cb.checked)ln.classList.remove('bad')};
+  ln.addEventListener('input',()=>{if(ln.value.trim()&&!cb.checked){cb.checked=true}sync();if(ln.value.trim())ln.classList.remove('bad')});
+  cb.addEventListener('change',()=>{sync();if(cb.checked&&!ln.value.trim())ln.focus()});sync()})();
 }
 </script>
 </body>
